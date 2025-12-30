@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "smart.planner"
+    namespace = "com.example.smartstudyplanner"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "smart.planner"
+        applicationId = "com.example.smartstudyplanner"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
@@ -59,6 +59,4 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.android.material:material:1.9.0")
-    implementation("com.google.android.material:material:1.11.0")
 }
