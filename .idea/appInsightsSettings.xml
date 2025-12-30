@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="smart.planner" />
+                  <option name="mobileSdkAppId" value="1:690750773558:android:7a4fa18bcae3531b82fb97" />
+                  <option name="projectId" value="ltmobile-c9240" />
+                  <option name="projectNumber" value="690750773558" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
