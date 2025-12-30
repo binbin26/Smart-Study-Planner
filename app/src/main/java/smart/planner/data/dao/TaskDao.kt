@@ -1,14 +1,15 @@
-package com.example.smartstudyplanner.data.dao
+package smart.planner.data.dao
 
 import androidx.room.*
-import com.example.smartstudyplanner.data.entity.Task
+import smart.planner.data.entity.Task
 
 @Dao
 interface TaskDao {
 
     @Insert
     suspend fun insert(task: Task)
-
+    @Delete
+    suspend fun delete(task: Task)
     @Query("SELECT * FROM Task WHERE subjectId = :subjectId")
     suspend fun getTasksBySubject(subjectId: Int): List<Task>
 }

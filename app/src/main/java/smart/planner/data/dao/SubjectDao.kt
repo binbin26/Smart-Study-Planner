@@ -1,7 +1,7 @@
-package com.example.smartstudyplanner.data.dao
+package smart.planner.data.dao
 
 import androidx.room.*
-import com.example.smartstudyplanner.data.entity.Subject
+import smart.planner.data.entity.Subject
 
 @Dao
 interface SubjectDao {

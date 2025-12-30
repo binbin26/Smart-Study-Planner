@@ -1,4 +1,4 @@
-package com.example.smartstudyplanner.ui.theme
+package smart.planner.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

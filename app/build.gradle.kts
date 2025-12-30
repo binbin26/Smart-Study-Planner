@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    //id("com.google.gms.google-services")
+    id("com.google.gms.google-services")
     id("kotlin-kapt")
 }
 
@@ -36,8 +36,10 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
@@ -51,8 +53,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.constraintlayout:constraintlayout:2.1.0")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     testImplementation(libs.junit)

@@ -1,13 +1,13 @@
-package com.example.smartstudyplanner.data.database
+package smart.planner.data.database
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.smartstudyplanner.data.dao.SubjectDao
-import com.example.smartstudyplanner.data.dao.TaskDao
-import com.example.smartstudyplanner.data.entity.Subject
-import com.example.smartstudyplanner.data.entity.Task
+import smart.planner.data.dao.SubjectDao
+import smart.planner.data.dao.TaskDao
+import smart.planner.data.entity.Subject
+import smart.planner.data.entity.Task
 
 @Database(
     entities = [Subject::class, Task::class],
