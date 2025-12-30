@@ -1,4 +1,4 @@
-package com.example.smartstudyplanner.data
+package smart.planner.data
 
 data class Task(
     val id: Int,

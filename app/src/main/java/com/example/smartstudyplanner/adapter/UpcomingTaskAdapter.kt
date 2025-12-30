@@ -1,11 +1,12 @@
-package com.example.smartstudyplanner.adapter
+package smart.planner.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.smartstudyplanner.data.Task
+import smart.planner.data.Task
+
 import smart.planner.databinding.ItemTaskBinding
 import java.text.SimpleDateFormat
 import java.util.Date
