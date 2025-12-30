@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.smartstudyplanner"
+    namespace = "smart.planner"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.smartstudyplanner"
+        applicationId = "smart.planner"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
