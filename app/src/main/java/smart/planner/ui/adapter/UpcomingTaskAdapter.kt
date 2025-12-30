@@ -1,12 +1,13 @@
-package smart.planner.adapter
+package smart.planner.ui.adapter
 
+import android.R
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import smart.planner.data.Task
-
+import smart.planner.data.model.Task
 import smart.planner.databinding.ItemTaskBinding
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,17 +55,17 @@ class UpcomingTaskAdapter(
 
                 // Optional: Strike-through text nếu completed
                 if (task.isCompleted) {
-                    tvTaskTitle.paintFlags = tvTaskTitle.paintFlags or android.graphics.Paint.STRIKE_THRU_TEXT_FLAG
+                    tvTaskTitle.paintFlags = tvTaskTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 } else {
-                    tvTaskTitle.paintFlags = tvTaskTitle.paintFlags and android.graphics.Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    tvTaskTitle.paintFlags = tvTaskTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 }
 
                 // Optional: Đổi màu deadline nếu gần hết hạn
                 val timeRemaining = task.deadline - System.currentTimeMillis()
                 if (timeRemaining < 86400000) { // < 1 day
-                    tvDeadline.setTextColor(binding.root.context.getColor(android.R.color.holo_red_dark))
+                    tvDeadline.setTextColor(binding.root.context.getColor(R.color.holo_red_dark))
                 } else {
-                    tvDeadline.setTextColor(binding.root.context.getColor(android.R.color.darker_gray))
+                    tvDeadline.setTextColor(binding.root.context.getColor(R.color.darker_gray))
                 }
             }
         }

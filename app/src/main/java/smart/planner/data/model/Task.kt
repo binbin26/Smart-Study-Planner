@@ -1,4 +1,4 @@
-package smart.planner.data
+package smart.planner.data.model
 
 data class Task(
     val id: Int,

@@ -2,13 +2,12 @@ package smart.planner.view
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import smart.planner.adapter.UpcomingTaskAdapter
+import smart.planner.ui.adapter.UpcomingTaskAdapter
 
-import smart.planner.data.Task
+import smart.planner.data.model.Task
 import kotlinx.coroutines.launch
 import smart.planner.R
 import smart.planner.databinding.ActivityHomeBinding
