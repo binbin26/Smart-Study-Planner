@@ -1,5 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
 
-    <style name="Theme.SmartStudyPlanner" parent="android:Theme.Material.Light.NoActionBar" />
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.SmartStudyPlanner" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+    <style name="Theme.SmartStudyPlanner" parent="Base.Theme.SmartStudyPlanner" />
 </resources>

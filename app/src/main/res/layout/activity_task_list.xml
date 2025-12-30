@@ -20,39 +20,6 @@
             app:singleSelection="true"
             app:chipSpacing="8dp">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tất cả"
-                app:checkedIconVisible="false"
-                app:checkable="true"
-                app:checked="true"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipToday"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hôm nay"
-                app:checkedIconVisible="false"
-                app:checkable="true"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipUpcoming"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sắp tới"
-                app:checkedIconVisible="false"
-                app:checkable="true"/>
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipCompleted"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hoàn thành"
-                app:checkedIconVisible="false"
-                app:checkable="true"/>
-
         </com.google.android.material.chip.ChipGroup>
 
         <!-- TASK LIST -->
@@ -63,18 +30,19 @@
             android:layout_marginTop="8dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:paddingBottom="80dp"/>
+            android:paddingBottom="80dp" />
 
     </LinearLayout>
 
     <!-- FLOATING ACTION BUTTON -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddTask"
-        android:layout_width="27dp"
-        android:layout_height="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:contentDescription="Add Task"
         android:src="@drawable/add"
+        app:fabSize="mini"
         app:layout_anchor="@id/rvTaskList"
         app:layout_anchorGravity="bottom|end" />
 
