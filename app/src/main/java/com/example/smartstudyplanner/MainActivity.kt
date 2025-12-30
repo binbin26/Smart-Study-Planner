@@ -26,10 +26,10 @@ fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Test API calls (có thể comment lại sau khi test xong)
-        //smart.planner.data.api.ApiTestExample.testAllApis()
+
+        // Test Coroutines (của team)
         smart.planner.data.test.CoroutinesIOTest.testDispatchersIO()
+
         // 2. Use setContent for Jetpack Compose
         setContent {
             // 3. Call your Compose theme and content
