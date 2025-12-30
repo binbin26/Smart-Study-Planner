@@ -1,5 +1,7 @@
 package smart.planner.data.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import smart.planner.data.api.HolidayApiService
 import smart.planner.data.api.RetrofitClient
 import smart.planner.data.local.VietnameseHolidays
@@ -19,124 +21,142 @@ class HolidayRepository {
     /**
      * Lấy danh sách các ngày lễ của một quốc gia trong năm hiện tại
      * Đối với Việt Nam: Merge local data (đầy đủ) với API data
+     * 
+     * Sử dụng Dispatchers.IO cho network operations (best practice)
+     * 
      * @param countryCode Mã quốc gia (ví dụ: "VN" cho Việt Nam, "US" cho Mỹ)
      * @return Result chứa danh sách ngày lễ hoặc error
      */
     suspend fun getPublicHolidaysForCurrentYear(countryCode: String): Result<List<Holiday>> {
-        return try {
-            val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-            
-            // Đối với Việt Nam, sử dụng local data đầy đủ và merge với API
-            if (countryCode == "VN") {
-                val localHolidays = VietnameseHolidays.getHolidaysForYear(currentYear)
+        return withContext(Dispatchers.IO) {
+            try {
+                val currentYear = Calendar.getInstance().get(Calendar.YEAR)
                 
-                // Thử lấy từ API để merge (nếu API có thêm ngày lễ khác)
-                return try {
-                    val response = apiService.getPublicHolidays(currentYear, countryCode)
-                    if (response.isSuccessful && response.body() != null) {
-                        val apiHolidays = response.body()!!
-                        val mergedHolidays = VietnameseHolidays.mergeWithApiHolidays(apiHolidays, currentYear)
-                        Result.success(mergedHolidays)
-                    } else {
+                // Đối với Việt Nam, sử dụng local data đầy đủ và merge với API
+                if (countryCode == "VN") {
+                    val localHolidays = VietnameseHolidays.getHolidaysForYear(currentYear)
+                    
+                    // Thử lấy từ API để merge (nếu API có thêm ngày lễ khác)
+                    try {
+                        val response = apiService.getPublicHolidays(currentYear, countryCode)
+                        if (response.isSuccessful && response.body() != null) {
+                            val apiHolidays = response.body()!!
+                            val mergedHolidays = VietnameseHolidays.mergeWithApiHolidays(apiHolidays, currentYear)
+                            Result.success(mergedHolidays)
+                        } else {
+                            // Nếu API lỗi, vẫn trả về local data
+                            Result.success(localHolidays)
+                        }
+                    } catch (e: Exception) {
                         // Nếu API lỗi, vẫn trả về local data
                         Result.success(localHolidays)
                     }
-                } catch (e: Exception) {
-                    // Nếu API lỗi, vẫn trả về local data
-                    Result.success(localHolidays)
+                } else {
+                    // Đối với các quốc gia khác, dùng API
+                    val response = apiService.getPublicHolidays(currentYear, countryCode)
+                    
+                    if (response.isSuccessful && response.body() != null) {
+                        Result.success(response.body()!!)
+                    } else {
+                        Result.failure(Exception("Failed to fetch holidays: ${response.code()}"))
+                    }
                 }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-            
-            // Đối với các quốc gia khác, dùng API
-            val response = apiService.getPublicHolidays(currentYear, countryCode)
-            
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch holidays: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
     
     /**
      * Lấy danh sách các ngày lễ của một quốc gia trong năm cụ thể
      * Đối với Việt Nam: Merge local data (đầy đủ) với API data
+     * 
+     * Sử dụng Dispatchers.IO cho network operations (best practice)
+     * 
      * @param year Năm cần lấy
      * @param countryCode Mã quốc gia
      * @return Result chứa danh sách ngày lễ hoặc error
      */
     suspend fun getPublicHolidays(year: Int, countryCode: String): Result<List<Holiday>> {
-        return try {
-            // Đối với Việt Nam, sử dụng local data đầy đủ và merge với API
-            if (countryCode == "VN") {
-                val localHolidays = VietnameseHolidays.getHolidaysForYear(year)
-                
-                // Thử lấy từ API để merge (nếu API có thêm ngày lễ khác)
-                return try {
-                    val response = apiService.getPublicHolidays(year, countryCode)
-                    if (response.isSuccessful && response.body() != null) {
-                        val apiHolidays = response.body()!!
-                        val mergedHolidays = VietnameseHolidays.mergeWithApiHolidays(apiHolidays, year)
-                        Result.success(mergedHolidays)
-                    } else {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Đối với Việt Nam, sử dụng local data đầy đủ và merge với API
+                if (countryCode == "VN") {
+                    val localHolidays = VietnameseHolidays.getHolidaysForYear(year)
+                    
+                    // Thử lấy từ API để merge (nếu API có thêm ngày lễ khác)
+                    try {
+                        val response = apiService.getPublicHolidays(year, countryCode)
+                        if (response.isSuccessful && response.body() != null) {
+                            val apiHolidays = response.body()!!
+                            val mergedHolidays = VietnameseHolidays.mergeWithApiHolidays(apiHolidays, year)
+                            Result.success(mergedHolidays)
+                        } else {
+                            // Nếu API lỗi, vẫn trả về local data
+                            Result.success(localHolidays)
+                        }
+                    } catch (e: Exception) {
                         // Nếu API lỗi, vẫn trả về local data
                         Result.success(localHolidays)
                     }
-                } catch (e: Exception) {
-                    // Nếu API lỗi, vẫn trả về local data
-                    Result.success(localHolidays)
+                } else {
+                    // Đối với các quốc gia khác, dùng API
+                    val response = apiService.getPublicHolidays(year, countryCode)
+                    
+                    if (response.isSuccessful && response.body() != null) {
+                        Result.success(response.body()!!)
+                    } else {
+                        Result.failure(Exception("Failed to fetch holidays: ${response.code()}"))
+                    }
                 }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-            
-            // Đối với các quốc gia khác, dùng API
-            val response = apiService.getPublicHolidays(year, countryCode)
-            
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch holidays: ${response.code()}"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
     
     /**
      * Lấy danh sách các ngày lễ sắp tới của một quốc gia
+     * Sử dụng Dispatchers.IO cho network operations
+     * 
      * @param countryCode Mã quốc gia
      * @return Result chứa danh sách ngày lễ hoặc error
      */
     suspend fun getNextPublicHolidays(countryCode: String): Result<List<Holiday>> {
-        return try {
-            val response = apiService.getNextPublicHolidays(countryCode)
-            
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch next holidays: ${response.code()}"))
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getNextPublicHolidays(countryCode)
+                
+                if (response.isSuccessful && response.body() != null) {
+                    Result.success(response.body()!!)
+                } else {
+                    Result.failure(Exception("Failed to fetch next holidays: ${response.code()}"))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
     
     /**
      * Lấy danh sách các ngày lễ toàn cầu sắp tới
+     * Sử dụng Dispatchers.IO cho network operations
+     * 
      * @return Result chứa danh sách ngày lễ hoặc error
      */
     suspend fun getNextPublicHolidaysWorldwide(): Result<List<Holiday>> {
-        return try {
-            val response = apiService.getNextPublicHolidaysWorldwide()
-            
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch worldwide holidays: ${response.code()}"))
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getNextPublicHolidaysWorldwide()
+                
+                if (response.isSuccessful && response.body() != null) {
+                    Result.success(response.body()!!)
+                } else {
+                    Result.failure(Exception("Failed to fetch worldwide holidays: ${response.code()}"))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
 }

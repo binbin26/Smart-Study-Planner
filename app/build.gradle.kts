@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("kotlin-kapt") // Cần cho Room annotation processing
 }
 
 android {
@@ -84,4 +85,14 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation("com.google.android.material:material:1.9.0")
+
+    // Room Database (cho ví dụ và tương lai)
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+
+    // Firebase Realtime Database (cho ví dụ và tương lai)
+    // Sử dụng BOM để quản lý version tự động
+    implementation("com.google.firebase:firebase-database")
 }

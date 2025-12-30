@@ -11,58 +11,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
+import androidx.lifecycle.viewmodel.compose.viewModel
 import smart.planner.data.model.Holiday
-import smart.planner.data.model.QuoteResponse
-import smart.planner.data.repository.HolidayRepository
-import smart.planner.data.repository.QuoteRepository
+import smart.planner.ui.viewmodel.ApiExampleViewModel
 
 /**
  * Màn hình test để hiển thị Quotes và Holidays
  * Dùng để kiểm tra API calls và hiển thị dữ liệu
+ * 
+ * Sử dụng ViewModel để tuân thủ MVVM pattern
+ * ViewModel tự động quản lý Coroutines với viewModelScope
  */
 @Composable
-fun TestScreen() {
-    val holidayRepository = remember { HolidayRepository() }
-    val quoteRepository = remember { QuoteRepository() }
-    val coroutineScope = rememberCoroutineScope()
+fun TestScreen(
+    viewModel: ApiExampleViewModel = viewModel()
+) {
+    // Collect state từ ViewModel (tự động trên Main thread)
+    val holidays by viewModel.holidays.collectAsState()
+    val holidaysLoading by viewModel.holidaysLoading.collectAsState()
+    val holidaysError by viewModel.holidaysError.collectAsState()
     
-    var holidays by remember { mutableStateOf<List<Holiday>>(emptyList()) }
-    var currentQuote by remember { mutableStateOf<QuoteResponse?>(null) }
-    var isLoadingHolidays by remember { mutableStateOf(false) }
-    var isLoadingQuote by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val quote by viewModel.quote.collectAsState()
+    val quoteLoading by viewModel.quoteLoading.collectAsState()
+    val quoteError by viewModel.quoteError.collectAsState()
     
     // Load dữ liệu khi màn hình được tạo
     LaunchedEffect(Unit) {
-        // Load holidays
-        coroutineScope.launch {
-            isLoadingHolidays = true
-            errorMessage = null
-            holidayRepository.getPublicHolidaysForCurrentYear("VN")
-                .onSuccess { 
-                    holidays = it.sortedBy { it.date }
-                    isLoadingHolidays = false
-                }
-                .onFailure { 
-                    errorMessage = "Lỗi load ngày lễ: ${it.message}"
-                    isLoadingHolidays = false
-                }
-        }
-        
-        // Load quote
-        coroutineScope.launch {
-            isLoadingQuote = true
-            quoteRepository.getRandomQuote()
-                .onSuccess { 
-                    currentQuote = it
-                    isLoadingQuote = false
-                }
-                .onFailure { 
-                    errorMessage = "Lỗi load quote: ${it.message}"
-                    isLoadingQuote = false
-                }
-        }
+        viewModel.loadHolidays("VN")
+        viewModel.loadRandomQuote()
     }
     
     Column(
@@ -106,22 +82,12 @@ fun TestScreen() {
                     )
                     Button(
                         onClick = {
-                            coroutineScope.launch {
-                                isLoadingQuote = true
-                                quoteRepository.getRandomQuote()
-                                    .onSuccess { 
-                                        currentQuote = it
-                                        isLoadingQuote = false
-                                    }
-                                    .onFailure { 
-                                        errorMessage = "Lỗi load quote: ${it.message}"
-                                        isLoadingQuote = false
-                                    }
-                            }
+                            // ViewModel tự động sử dụng viewModelScope
+                            viewModel.loadRandomQuote()
                         },
-                        enabled = !isLoadingQuote
+                        enabled = !quoteLoading
                     ) {
-                        if (isLoadingQuote) {
+                        if (quoteLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 strokeWidth = 2.dp
@@ -132,7 +98,7 @@ fun TestScreen() {
                     }
                 }
                 
-                if (isLoadingQuote) {
+                if (quoteLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -141,15 +107,15 @@ fun TestScreen() {
                     ) {
                         CircularProgressIndicator()
                     }
-                } else if (currentQuote != null) {
+                } else if (quote != null) {
                     Text(
-                        text = "\"${currentQuote!!.content}\"",
+                        text = "\"${quote!!.content}\"",
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "— ${currentQuote!!.author}",
+                        text = "— ${quote!!.author}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.fillMaxWidth(),
@@ -160,6 +126,16 @@ fun TestScreen() {
                         text = "Không có quote",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
+                    )
+                }
+                
+                // Hiển thị lỗi quote nếu có
+                if (quoteError != null) {
+                    Text(
+                        text = "❌ $quoteError",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
@@ -193,23 +169,12 @@ fun TestScreen() {
                     )
                     Button(
                         onClick = {
-                            coroutineScope.launch {
-                                isLoadingHolidays = true
-                                errorMessage = null
-                                holidayRepository.getPublicHolidaysForCurrentYear("VN")
-                                    .onSuccess { 
-                                        holidays = it.sortedBy { it.date }
-                                        isLoadingHolidays = false
-                                    }
-                                    .onFailure { 
-                                        errorMessage = "Lỗi load ngày lễ: ${it.message}"
-                                        isLoadingHolidays = false
-                                    }
-                            }
+                            // ViewModel tự động sử dụng viewModelScope
+                            viewModel.loadHolidays("VN")
                         },
-                        enabled = !isLoadingHolidays
+                        enabled = !holidaysLoading
                     ) {
-                        if (isLoadingHolidays) {
+                        if (holidaysLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 strokeWidth = 2.dp
@@ -220,7 +185,7 @@ fun TestScreen() {
                     }
                 }
                 
-                if (isLoadingHolidays) {
+                if (holidaysLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -240,34 +205,30 @@ fun TestScreen() {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(holidays) { holiday ->
+                            items(holidays.sortedBy { it.date }) { holiday ->
                                 HolidayItem(holiday = holiday)
                             }
                         }
                     }
                 }
-            }
-        }
-        
-        // Error message
-        if (errorMessage != null) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Text(
-                    text = "❌ $errorMessage",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.padding(16.dp)
-                )
+                
+                // Hiển thị lỗi holidays nếu có
+                if (holidaysError != null) {
+                    Text(
+                        text = "❌ $holidaysError",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         }
     }
 }
 
+/**
+ * Composable để hiển thị một Holiday item
+ */
 @Composable
 fun HolidayItem(holiday: Holiday) {
     Card(
