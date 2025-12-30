@@ -1,4 +1,4 @@
-package smart.planner
+package com.example.smartstudyplanner
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
