@@ -38,20 +38,24 @@ class QuoteRepository {
     
     /**
      * Lấy một câu trích dẫn ngẫu nhiên với tags cụ thể (từ API tiếng Anh)
+     * Sử dụng Dispatchers.IO cho network operations
+     * 
      * @param tags Danh sách tags (ví dụ: "motivational,success,education")
      * @return Result chứa câu trích dẫn hoặc error
      */
     suspend fun getRandomQuoteByTags(tags: String): Result<QuoteResponse> {
-        return try {
-            val response = apiService.getRandomQuoteByTags(tags)
-            
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Failed to fetch quote by tags: ${response.code()}"))
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.getRandomQuoteByTags(tags)
+                
+                if (response.isSuccessful && response.body() != null) {
+                    Result.success(response.body()!!)
+                } else {
+                    Result.failure(Exception("Failed to fetch quote by tags: ${response.code()}"))
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
             }
-        } catch (e: Exception) {
-            Result.failure(e)
         }
     }
     
