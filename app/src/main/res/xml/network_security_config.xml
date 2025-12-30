@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 
+        Cấu hình Network Security để xử lý SSL certificate validation
+        Cho phép trust system và user certificates để fix lỗi "Chain validation failed"
+    -->
+    
+    <!-- Base config cho tất cả các domain -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust system certificates (default Android certificates) -->
+            <certificates src="system" />
+            <!-- Trust user certificates (cho debug và custom certificates) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Cấu hình cụ thể cho domain api.quotable.io -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.quotable.io</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Cấu hình cụ thể cho domain date.nager.at -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">date.nager.at</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
+
