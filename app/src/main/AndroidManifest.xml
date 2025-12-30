@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartStudyPlanner">
         <activity
-            android:name="com.example.smartstudyplanner.Home"
+            android:name="com.example.smartstudyplanner.view.Home"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
