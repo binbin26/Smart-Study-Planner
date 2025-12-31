@@ -51,7 +51,11 @@ class HomeActivity : AppCompatActivity() {
                     if (isChecked) "Đã hoàn thành: ${task.title}" else "Chưa hoàn thành: ${task.title}",
                     Toast.LENGTH_SHORT
                 ).show()
+                // Cập nhật trạng thái thật của object
+                task.isCompleted = isChecked
 
+                // Cập nhật lại dashboard
+                updateDashboard(taskAdapter.currentList)
                 // TODO: Update task status in database/viewmodel
                 // viewModel.updateTaskStatus(task.id, isChecked)
             }

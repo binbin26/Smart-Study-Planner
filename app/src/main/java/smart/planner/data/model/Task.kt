@@ -6,5 +6,5 @@ data class Task(
     val description: String,
     val subjectId: Int,
     val deadline: Long,
-    val isCompleted: Boolean = false
+    var isCompleted: Boolean = false
 )

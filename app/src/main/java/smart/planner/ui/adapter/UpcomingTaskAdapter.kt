@@ -39,33 +39,33 @@ class UpcomingTaskAdapter(
 
         fun bind(task: Task) {
             binding.apply {
+                // 1. Tắt listener trước khi gán giá trị để tránh bị gọi đè logic khi scroll list
+                cbDone.setOnCheckedChangeListener(null)
+
                 tvTaskTitle.text = task.title
                 tvDeadline.text = "Deadline: ${formatDeadline(task.deadline)}"
                 cbDone.isChecked = task.isCompleted
 
-                // Click vào card → navigate
-                root.setOnClickListener {
-                    onTaskClick(task)
-                }
+                // 2. Gọi hàm cập nhật gạch ngang (tách riêng để dùng lại)
+                updateStrikeThrough(task.isCompleted)
 
-                // Click checkbox → update status
+                root.setOnClickListener { onTaskClick(task) }
+
+                // 3. Xử lý click checkbox
                 cbDone.setOnCheckedChangeListener { _, isChecked ->
-                    onCheckboxClick(task, isChecked)
+                    updateStrikeThrough(isChecked) // Gạch ngang ngay lập tức trên giao diện
+                    onCheckboxClick(task, isChecked) // Báo về Activity/ViewModel
                 }
-
-                // Optional: Strike-through text nếu completed
-                if (task.isCompleted) {
+            }
+        }
+        private fun updateStrikeThrough(isCompleted: Boolean) {
+            binding.apply {
+                if (isCompleted) {
                     tvTaskTitle.paintFlags = tvTaskTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                    tvTaskTitle.alpha = 0.5f // Làm mờ chữ cho đẹp
                 } else {
                     tvTaskTitle.paintFlags = tvTaskTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                }
-
-                // Optional: Đổi màu deadline nếu gần hết hạn
-                val timeRemaining = task.deadline - System.currentTimeMillis()
-                if (timeRemaining < 86400000) { // < 1 day
-                    tvDeadline.setTextColor(binding.root.context.getColor(R.color.holo_red_dark))
-                } else {
-                    tvDeadline.setTextColor(binding.root.context.getColor(R.color.darker_gray))
+                    tvTaskTitle.alpha = 1.0f // Hiện rõ lại
                 }
             }
         }
