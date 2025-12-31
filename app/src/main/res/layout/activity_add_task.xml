@@ -94,30 +94,42 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:orientation="horizontal">
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="55dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Hủy"
+                    app:strokeColor="#E53935"
+                    android:textColor="#E53935"
+                    android:textAllCaps="false" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveTask"
+                    android:layout_width="0dp"
+                    android:layout_height="55dp"
+                    android:layout_weight="1.5"
+                    android:text="Lưu Task"
+                    android:textAllCaps="false" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCancel"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
+                android:id="@+id/btnReviewTasks"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
                 android:layout_height="55dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Hủy"
-                android:textSize="16sp"
-                android:textColor="#E53935"
-                app:strokeColor="#E53935"
-                android:textAllCaps="false" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveTask"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1.5"
-                android:text="Lưu Task"
-                android:textSize="16sp"
+                android:layout_marginTop="8dp"
+                android:text="Xem lại Task"
+                android:textColor="#3F51B5"
                 android:textAllCaps="false" />
         </LinearLayout>
-
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
