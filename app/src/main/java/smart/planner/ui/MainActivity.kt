@@ -1,4 +1,4 @@
-package smart.planner
+package smart.planner.smart.planner.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import smart.planner.data.test.CoroutinesIOTest
 
 // This is a placeholder theme. You can customize it in another file (e.g., ui/theme/Theme.kt)
 @Composable
@@ -26,10 +27,10 @@ fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Test Coroutines (của team)
-        smart.planner.data.test.CoroutinesIOTest.testDispatchersIO()
-
+        
+        // Test API calls (có thể comment lại sau khi test xong)
+        //smart.planner.data.api.ApiTestExample.testAllApis()
+        CoroutinesIOTest.testDispatchersIO()
         // 2. Use setContent for Jetpack Compose
         setContent {
             // 3. Call your Compose theme and content
