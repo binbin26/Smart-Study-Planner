@@ -176,6 +176,25 @@
                 android:text="Deadline khẩn cấp"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"/>
+            <!-- CALENDAR VIEW -->
+            <!-- CALENDAR VIEW -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lịch học và Deadline"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"/>
+
+            <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+                android:id="@+id/materialCalendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:mcv_showOtherDates="all"
+                app:mcv_selectionColor="@color/purple_500"
+                app:mcv_tileSize="40dp"
+                android:layout_marginTop="8dp"/>
+
+
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvUpcomingTasks"

@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.compose.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -95,4 +96,6 @@ dependencies {
     // Firebase Realtime Database (cho ví dụ và tương lai)
     // Sử dụng BOM để quản lý version tự động
     implementation("com.google.firebase:firebase-database")
+    //
+    implementation("com.prolificinteractive:material-calendarview:1.4.3")
 }
