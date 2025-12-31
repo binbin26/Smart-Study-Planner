@@ -4,15 +4,25 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items // Cần thiết để sử dụng items(list)
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState // Cần thư viện runtime-livedata
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import smart.planner.ui.AddTaskActivity // Đảm bảo import đúng đường dẫn này
+import smart.planner.data.model.Task
+import smart.planner.ui.AddTaskActivity
+import smart.planner.ui.viewmodel.TaskViewModel
 
 @Composable
 fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
@@ -26,12 +36,8 @@ fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        smart.planner.data.test.CoroutinesIOTest.testDispatchersIO()
-
         setContent {
             SmartStudyPlannerTheme {
-                // Gọi màn hình chính ở đây
                 MainScreen()
             }
         }
@@ -39,35 +45,89 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
-    val context = LocalContext.current // Lấy context để khởi tạo Intent chuyển màn hình
+fun MainScreen(viewModel: TaskViewModel = viewModel()) {
+    val context = LocalContext.current
+    // Quan sát LiveData và chuyển thành State để Compose tự render lại khi Room thay đổi
+    val tasks by viewModel.allTasks.observeAsState(initial = emptyList())
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
         Text(
-            text = "Hello User!",
-            style = MaterialTheme.typography.headlineMedium
+            text = "My Tasks",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+
+        Button(
+            onClick = {
+                val intent = Intent(context, AddTaskActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Mở Thêm Task")
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Nút bấm để mở màn hình Thêm Task
-        Button(onClick = {
-            val intent = Intent(context, AddTaskActivity::class.java)
-            context.startActivity(intent)
-        }) {
-            Text(text = "Mở Thêm Task")
+        if (tasks.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Chưa có task nào", color = Color.Gray)
+            }
+        } else {
+            // SỬA ĐỔI TẠI ĐÂY: Sử dụng items(tasks) thay vì items(count = ...)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(tasks) { task ->
+                    TaskCard(
+                        task = task,
+                        onDelete = { viewModel.deleteTask(task) }
+                    )
+                }
+            }
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    SmartStudyPlannerTheme {
-        MainScreen()
+fun TaskCard(task: Task, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Môn: ${task.subject}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.DarkGray
+                )
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Xóa Task",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
 }

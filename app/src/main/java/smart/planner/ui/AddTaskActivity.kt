@@ -48,16 +48,19 @@ class AddTaskActivity : AppCompatActivity() {
             val desc = etDescription.text.toString().trim()
             val subject = spinnerSubject.selectedItem.toString()
 
-            // Lấy thời gian từ DatePicker chính xác
             val calendar = Calendar.getInstance()
             calendar.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
             val deadline = calendar.timeInMillis
 
-            // Validate dữ liệu đầu vào
             if (name.isNotEmpty()) {
                 viewModel.addTask(name, subject, deadline, desc)
                 Toast.makeText(this, "Đã thêm task thành công!", Toast.LENGTH_SHORT).show()
-                finish()
+
+                // SỬA TẠI ĐÂY: Thay vì finish(), ta reset các trường nhập liệu
+                etTaskName.text?.clear()
+                etDescription.text?.clear()
+                etTaskName.requestFocus() // Đưa con trỏ về ô nhập tên bài tập
+
             } else {
                 etTaskName.error = "Tên bài tập không được để trống"
                 Toast.makeText(this, "Vui lòng nhập tên bài tập", Toast.LENGTH_SHORT).show()

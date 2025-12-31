@@ -14,16 +14,22 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: TaskRepository
 
-    // SỬA TẠI ĐÂY: Phải khai báo là 'val' (không có private) để Activity truy cập được
+    // Khai báo công khai (không có private) để MainActivity và CheckTaskActivity có thể quan sát dữ liệu
     val allTasks: LiveData<List<Task>>
 
     init {
+        // Khởi tạo cơ sở dữ liệu và repository
         val dao = AppDatabase.getDatabase(application).taskDao()
         repository = TaskRepository(dao)
-        // Gán dữ liệu từ repository vào biến allTasks
+
+        // Gán LiveData từ repository vào allTasks để UI có thể theo dõi biến động dữ liệu
         allTasks = repository.allTasks
     }
 
+    /**
+     * Thêm task mới vào cơ sở dữ liệu Room
+     * Chạy trên Dispatchers.IO để không gây lag giao diện (Main Thread)
+     */
     fun addTask(name: String, subject: String, deadline: Long, description: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val newTask = Task(
@@ -36,7 +42,10 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Đảm bảo có hàm deleteTask để logic xóa trong Adapter hoạt động
+    /**
+     * Xóa một task khỏi cơ sở dữ liệu
+     * Sau khi xóa, LiveData (allTasks) sẽ tự động cập nhật và báo cho UI biến mất
+     */
     fun deleteTask(task: Task) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.delete(task)
