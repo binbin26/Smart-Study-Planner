@@ -1,71 +1,18 @@
 package smart.planner.data.repository
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.LiveData
+import smart.planner.data.local.TaskDao
+import smart.planner.data.model.Task // Phải import đúng đường dẫn này
 
-/**
- * Repository cho Task Management
- */
-class TaskRepository {
-    
-    suspend fun createTask(
-        title: String,
-        description: String? = null,
-        subjectId: String,
-        deadline: Long? = null,
-        priority: Int? = null,
-        userId: String
-    ): Result<Any> {
-        return withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Result.failure(Exception("Not implemented"))
-        }
+class TaskRepository(private val taskDao: TaskDao) {
+
+    val allTasks: LiveData<List<Task>> = taskDao.getAllTasks()
+
+    suspend fun insert(task: Task) {
+        taskDao.insertTask(task)
     }
-    
-    suspend fun updateTask(
-        taskId: String,
-        title: String? = null,
-        description: String? = null,
-        subjectId: String? = null,
-        deadline: Long? = null,
-        priority: Int? = null
-    ): Result<Any> {
-        return withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Result.failure(Exception("Not implemented"))
-        }
-    }
-    
-    suspend fun setTaskStatus(taskId: String, status: String): Result<Any> {
-        return withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Result.failure(Exception("Not implemented"))
-        }
-    }
-    
-    suspend fun getTaskById(taskId: String): Result<Any> {
-        return withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Result.failure(Exception("Not implemented"))
-        }
-    }
-    
-    suspend fun getTasks(
-        userId: String,
-        subjectId: String? = null,
-        status: String? = null
-    ): Result<List<Any>> {
-        return withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Result.failure(Exception("Not implemented"))
-        }
-    }
-    
-    suspend fun deleteTask(taskId: String): Result<Unit> {
-        return withContext(Dispatchers.IO) {
-            // TODO: Implement
-            Result.failure(Exception("Not implemented"))
-        }
+
+    suspend fun delete(task: Task) {
+        taskDao.deleteTask(task)
     }
 }
-
