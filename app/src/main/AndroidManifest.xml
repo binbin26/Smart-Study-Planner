@@ -16,7 +16,7 @@
         android:theme="@style/Theme.SmartStudyPlanner">
 
         <activity
-            android:name="smart.planner.MainActivity"
+            android:name=".smart.planner.ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.SmartStudyPlanner">
