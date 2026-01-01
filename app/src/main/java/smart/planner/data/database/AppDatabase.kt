@@ -6,17 +6,24 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import smart.planner.data.dao.SubjectDao
 import smart.planner.data.dao.TaskDao
+import smart.planner.data.dao.QuoteCacheDao
 import smart.planner.data.entity.Subject
 import smart.planner.data.entity.Task
+import smart.planner.data.entity.QuoteCache
 
 @Database(
-    entities = [Subject::class, Task::class],
-    version = 1
+    entities = [
+        Subject::class,
+        Task::class,
+        QuoteCache::class
+    ],
+    version = 2
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun subjectDao(): SubjectDao
     abstract fun taskDao(): TaskDao
+    abstract fun quoteCacheDao(): QuoteCacheDao
 
     companion object {
 
@@ -29,7 +36,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "smart_study_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
