@@ -8,42 +8,52 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import smart.planner.R
 import smart.planner.data.entity.Task
+import java.text.SimpleDateFormat
+import java.util.*
 
-class TaskAdapter : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+class TaskAdapter(
+    private val onCheckedChange: ((Task, Boolean) -> Unit)? = null
+) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
-    private var tasks: List<Task> = listOf()
+    private var tasks: List<Task> = emptyList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_task, parent, false)
         return TaskViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
-        holder.title.text = task.title
-        holder.subject.text = task.subjectId.toString()
-        holder.deadline.text = "Deadline: ${task.deadline}"
-        holder.status.text = task.status
-        holder.checkBox.isChecked = task.status == "Completed"
 
-        // Cập nhật trạng thái công việc khi checkbox được đánh dấu
+        holder.title.text = task.title
+        holder.subject.text = task.subjectName
+
+        holder.deadline.text = "Deadline: ${formatDate(task.deadline)}"
+
+        holder.status.text = if (task.isDone) "Completed" else "Pending"
+
+        // tránh trigger lại listener khi recycle
+        holder.checkBox.setOnCheckedChangeListener(null)
+        holder.checkBox.isChecked = task.isDone
+
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
-            val updatedTask = task.copy(status = if (isChecked) "Completed" else "TODO")
-            // Cập nhật trong cơ sở dữ liệu nếu cần
+            onCheckedChange?.invoke(task, isChecked)
         }
     }
 
-    override fun getItemCount(): Int {
-        return tasks.size
-    }
+    override fun getItemCount(): Int = tasks.size
 
     fun submitList(newTasks: List<Task>) {
         tasks = newTasks
         notifyDataSetChanged()
     }
 
-    fun getTaskAt(position: Int): Task {
-        return tasks[position]
+    fun getTaskAt(position: Int): Task = tasks[position]
+
+    private fun formatDate(time: Long): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return sdf.format(Date(time))
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

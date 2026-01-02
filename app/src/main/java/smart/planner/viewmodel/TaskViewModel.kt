@@ -5,92 +5,135 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import smart.planner.data.database.AppDatabase
-import smart.planner.data.entity.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
+import smart.planner.data.database.AppDatabase
+import smart.planner.data.dao.TaskRealtimeDao
+import smart.planner.data.entity.Task
 import smart.planner.data.entity.QuoteCache
+import smart.planner.data.firebase.toEntity
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
-    /* ===================== CŨ – GIỮ NGUYÊN ===================== */
+    /* ===================== DATABASE (CHỈ DÙNG CHO QUOTE) ===================== */
+
+    private val db = AppDatabase.getDatabase(application)
+
+    /* ===================== REALTIME DATABASE DAO ===================== */
+
+    private val realtimeDao = TaskRealtimeDao()
+
+    /* ===================== STATE ===================== */
 
     private val _taskList = MutableLiveData<List<Task>>()
     val taskList: LiveData<List<Task>> = _taskList
 
     private val _taskStatus = MutableLiveData<String>()
     val taskStatus: LiveData<String> = _taskStatus
+
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
     val syncState: StateFlow<SyncState> = _syncState
-    private val db = AppDatabase.getDatabase(application)
 
-    /* ===================== MỚI – LOADING INDICATOR ===================== */
+    /* ==================================================
+       🔥 LOAD TASK FROM FIREBASE REALTIME DATABASE
+       ================================================== */
 
+    fun loadFromRealtimeDatabase() {
+        _syncState.value = SyncState.Syncing
 
+        realtimeDao.getAllTasks(
+            onSuccess = { list ->
+                val tasks = list.map { (firebaseId, model) ->
+                    model.toEntity(firebaseId)
+                }
 
-    /* ===================== LOAD TASK ===================== */
-
-    fun loadTasks(subjectId: Int) {
-        viewModelScope.launch {
-            _syncState.value = SyncState.Syncing   // 🔵 BẮT ĐẦU SYNC
-
-            try {
-                delay(1500) // giả lập sync để nhìn thấy ProgressBar (demo)
-
-                val tasks = db.taskDao().getTasksBySubject(subjectId)
                 _taskList.postValue(tasks)
-
                 _syncState.value = SyncState.Success
-            } catch (e: Exception) {
-                Log.e("TaskViewModel", "Load tasks failed", e)
+
+                Log.d("RTDB", "Loaded ${tasks.size} tasks from Realtime DB")
+            },
+            onError = { error ->
+                Log.e("RTDB", "Load failed", error)
                 _taskList.postValue(emptyList())
-                _syncState.value = SyncState.Error("Load tasks failed")
+                _syncState.value = SyncState.Error("Load Realtime DB failed")
             }
+        )
+    }
+
+    /* ==================================================
+       🔄 UPDATE TASK DONE (CHECKBOX)
+       ================================================== */
+
+    fun updateTaskDone(task: Task, isDone: Boolean) {
+        _syncState.value = SyncState.Syncing
+
+        try {
+            realtimeDao.updateTaskDone(task.firebaseId, isDone)
+
+            // update UI local
+            val updatedList = _taskList.value
+                ?.map {
+                    if (it.firebaseId == task.firebaseId) {
+                        it.copy(isDone = isDone)
+                    } else it
+                }
+                ?: emptyList()
+
+            _taskList.postValue(updatedList)
+
+
+            _taskList.postValue(updatedList)
+            _taskStatus.postValue("Task updated")
+            _syncState.value = SyncState.Success
+        } catch (e: Exception) {
+            Log.e("RTDB", "Update task failed", e)
+            _taskStatus.postValue("Failed to update task")
+            _syncState.value = SyncState.Error("Update task failed")
+        }
+    }
+
+    /* ==================================================
+       🗑 DELETE TASK (SWIPE TO DELETE)
+       ================================================== */
+
+    fun deleteTask(task: Task) {
+        _syncState.value = SyncState.Syncing
+
+        try {
+            realtimeDao.deleteTask(task.firebaseId)
+
+            val updatedList = _taskList.value
+                ?.filter { it.firebaseId != task.firebaseId }
+                ?: emptyList()
+
+            _taskList.postValue(updatedList)
+            _taskStatus.postValue("Task deleted")
+            _syncState.value = SyncState.Success
+        } catch (e: Exception) {
+            Log.e("RTDB", "Delete task failed", e)
+            _taskStatus.postValue("Failed to delete task")
+            _syncState.value = SyncState.Error("Delete task failed")
         }
     }
 
 
-    /* ===================== UPDATE TASK STATUS ===================== */
+    /* ===================== QUOTE CACHE (GIỮ NGUYÊN) ===================== */
 
-    fun updateTaskStatus(task: Task, newStatus: String) {
-        viewModelScope.launch {
-            _syncState.value = SyncState.Syncing
-
-            try {
-                delay(800)
-                val updatedTask = task.copy(status = newStatus)
-                db.taskDao().insert(updatedTask)
-                _taskStatus.postValue("Task status updated")
-                _syncState.value = SyncState.Success
-            } catch (e: Exception) {
-                Log.e("TaskViewModel", "Update task failed", e)
-                _taskStatus.postValue("Failed to update task status")
-                _syncState.value = SyncState.Error("Update task failed")
-            }
-        }
-    }
-    /* ===================== Load TASK ===================== */
     fun loadQuote() {
         viewModelScope.launch {
             val dao = db.quoteCacheDao()
             val cache = dao.getCache()
-
-            val CACHE_EXPIRE = 24 * 60 * 60 * 1000 // 24h
+            val CACHE_EXPIRE = 24 * 60 * 60 * 1000L
 
             if (cache != null && System.currentTimeMillis() - cache.timestamp < CACHE_EXPIRE) {
                 Log.d("Quote", "Load from cache: ${cache.content}")
             } else {
-                // MOCK API (đủ để báo cáo)
-                val responseContent = "Stay hungry, stay foolish"
-                val responseAuthor = "Steve Jobs"
-
                 dao.insert(
                     QuoteCache(
-                        content = responseContent,
-                        author = responseAuthor,
+                        content = "Stay hungry, stay foolish",
+                        author = "Steve Jobs",
                         timestamp = System.currentTimeMillis()
                     )
                 )
@@ -98,24 +141,4 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
-    /* ===================== DELETE TASK ===================== */
-
-    fun deleteTask(task: Task) {
-        viewModelScope.launch {
-            _syncState.value = SyncState.Syncing
-
-            try {
-                delay(800)
-                db.taskDao().delete(task)
-                _taskStatus.postValue("Task deleted")
-                _syncState.value = SyncState.Success
-            } catch (e: Exception) {
-                Log.e("TaskViewModel", "Delete task failed", e)
-                _taskStatus.postValue("Failed to delete task")
-                _syncState.value = SyncState.Error("Delete task failed")
-            }
-        }
-    }
-
 }

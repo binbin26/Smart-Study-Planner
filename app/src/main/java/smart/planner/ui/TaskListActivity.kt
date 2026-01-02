@@ -74,6 +74,11 @@ class TaskListActivity : ComponentActivity() {
         /* ===================== LOAD DATA ===================== */
 
         // Load các công việc từ ViewModel
-        taskViewModel.loadTasks(subjectId)
+        // 1️⃣ Sync Firebase → Room
+        taskViewModel.loadFromRealtimeDatabase()
+
+
+// 2️⃣ Load từ Room
+
     }
 }

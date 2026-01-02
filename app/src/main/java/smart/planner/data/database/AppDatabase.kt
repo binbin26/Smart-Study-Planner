@@ -17,7 +17,7 @@ import smart.planner.data.entity.QuoteCache
         Task::class,
         QuoteCache::class
     ],
-    version = 2
+    version = 3
 )
 abstract class AppDatabase : RoomDatabase() {
 
