@@ -1,6 +1,7 @@
-package smart.planner.smart.planner.ui
+package smart.planner.ui
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,40 +11,139 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import smart.planner.data.test.CoroutinesIOTest
+import androidx.lifecycle.lifecycleScope
+import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.launch
+import smart.planner.data.local.AppDatabase
+import smart.planner.data.sync.SubjectSyncService
+import smart.planner.data.sync.SyncManager
+import smart.planner.data.sync.TaskSyncService
 
-// This is a placeholder theme. You can customize it in another file (e.g., ui/theme/Theme.kt)
 @Composable
 fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
     MaterialTheme {
-        // A surface container using the 'background' color from the theme
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             content()
         }
     }
 }
 
-// 1. Change AppCompatActivity to ComponentActivity
 class MainActivity : ComponentActivity() {
+
+    private val TAG = "MainActivity"
+
+    private lateinit var syncManager: SyncManager
+    private lateinit var subjectSyncService: SubjectSyncService
+    private lateinit var taskSyncService: TaskSyncService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Test API calls (có thể comment lại sau khi test xong)
-        //smart.planner.data.api.ApiTestExample.testAllApis()
-        CoroutinesIOTest.testDispatchersIO()
-        // 2. Use setContent for Jetpack Compose
+
+        Log.d(TAG, "========================================")
+        Log.d(TAG, "🚀 App Starting...")
+        Log.d(TAG, "========================================")
+
+        smart.planner.data.test.CoroutinesIOTest.testDispatchersIO()
+
+        setupSync()
+        startSync()
+
         setContent {
-            // 3. Call your Compose theme and content
             SmartStudyPlannerTheme {
-                // You can place your main screen composable here
-                // For now, we will just show a greeting
                 Greeting(name = "User")
             }
+        }
+
+        Log.d(TAG, "✅ App Started Successfully")
+    }
+
+    private fun setupSync() {
+        Log.d(TAG, "📦 Setting up sync services...")
+
+        try {
+            val database = AppDatabase.getDatabase(applicationContext)
+            Log.d(TAG, "  ✅ Room Database: OK")
+
+            val firebaseDb = FirebaseDatabase.getInstance().reference
+            Log.d(TAG, "  ✅ Firebase Database: OK")
+
+            syncManager = SyncManager(applicationContext)
+            Log.d(TAG, "  ✅ SyncManager: Created")
+
+            subjectSyncService = SubjectSyncService(
+                subjectDao = database.subjectDao(),
+                firebaseDatabase = firebaseDb,
+                syncManager = syncManager
+            )
+            Log.d(TAG, "  ✅ SubjectSyncService: Created")
+
+            taskSyncService = TaskSyncService(
+                taskDao = database.taskDao(),
+                firebaseDatabase = firebaseDb,
+                syncManager = syncManager
+            )
+            Log.d(TAG, "  ✅ TaskSyncService: Created")
+
+            Log.d(TAG, "✅ All sync services initialized!")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error setting up sync: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    private fun startSync() {
+        Log.d(TAG, "🔄 Starting sync...")
+
+        lifecycleScope.launch {
+            try {
+                Log.d(TAG, "  📡 Starting Firebase listeners...")
+                subjectSyncService.startListening()
+                taskSyncService.startListening()
+                Log.d(TAG, "  ✅ Listeners started")
+
+                Log.d(TAG, "  🔄 Running initial sync...")
+
+                val subjectSyncResult = subjectSyncService.initialSync()
+                if (subjectSyncResult.isSuccess) {
+                    Log.d(TAG, "  ✅ Subjects synced")
+                } else {
+                    Log.w(TAG, "  ⚠️ Subject sync failed (may be offline)")
+                }
+
+                val taskSyncResult = taskSyncService.initialSync()
+                if (taskSyncResult.isSuccess) {
+                    Log.d(TAG, "  ✅ Tasks synced")
+                } else {
+                    Log.w(TAG, "  ⚠️ Task sync failed (may be offline)")
+                }
+
+                Log.d(TAG, "✅ Sync completed!")
+                Log.d(TAG, "========================================")
+
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error during sync: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        Log.d(TAG, "🛑 App Stopping...")
+
+        try {
+            syncManager.cleanup()
+            subjectSyncService.cleanup()
+            taskSyncService.cleanup()
+            Log.d(TAG, "✅ Sync services cleaned up")
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Error cleaning up: ${e.message}")
         }
     }
 }
 
-// A simple example of a Composable function
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -52,7 +152,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     )
 }
 
-// A preview for the Greeting Composable
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
