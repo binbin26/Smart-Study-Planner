@@ -1,18 +1,24 @@
 package smart.planner
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
-import smart.planner.data.entity.Subject
 import smart.planner.data.database.AppDatabase
-import smart.planner.ui.adapter.TaskAdapter
+import smart.planner.data.entity.Subject
 import smart.planner.data.entity.Task
+import smart.planner.notification.NotificationScheduler
+import smart.planner.ui.adapter.TaskAdapter
 import smart.planner.viewmodel.TaskViewModel
 
 class MainActivity : ComponentActivity() {
@@ -24,16 +30,14 @@ class MainActivity : ComponentActivity() {
 
         val db = AppDatabase.getDatabase(this)
 
-        /* ===================== INSERT DEMO DATA (GIỮ LẠI, SỬA ĐÚNG ENTITY) ===================== */
+        /* ===================== INSERT DEMO DATA (GIỮ NGUYÊN) ===================== */
         lifecycleScope.launch {
-            // Insert subject demo
             db.subjectDao().insert(
                 Subject(name = "Mobile Programming", code = "MOB101", teacher = "Mr A")
             )
 
             val subject = db.subjectDao().getAll().first()
 
-            // 🔥 INSERT TASK THEO ENTITY MỚI
             db.taskDao().insert(
                 Task(
                     firebaseId = "local_${System.currentTimeMillis()}",
@@ -51,7 +55,17 @@ class MainActivity : ComponentActivity() {
         /* ===================== UI ===================== */
         setContentView(R.layout.activity_task_list)
 
-        // 🔥 Adapter mới (có callback checkbox)
+        /* ===================== PERMISSION (ANDROID 13+) ===================== */
+        requestNotificationPermission()
+
+        /* ===================== TEST NOTIFICATION (DEADLINE 1 PHÚT) ===================== */
+        NotificationScheduler.scheduleTest(
+            context = this,
+            taskId = "test_task_1",
+            title = "Deadline test 1 phút"
+        )
+
+        /* ===================== ADAPTER ===================== */
         val taskAdapter = TaskAdapter { task, isDone ->
             taskViewModel.updateTaskDone(task, isDone)
         }
@@ -66,11 +80,9 @@ class MainActivity : ComponentActivity() {
             taskAdapter.submitList(tasks)
         }
 
-        /* ===================== LOAD TASK ===================== */
+        /* ===================== LOAD TASK FROM FIREBASE ===================== */
         lifecycleScope.launch {
-            val subject = db.subjectDao().getAll().first()
             taskViewModel.loadFromRealtimeDatabase()
-// 🔥 String
         }
 
         /* ===================== SWIPE TO DELETE ===================== */
@@ -91,5 +103,22 @@ class MainActivity : ComponentActivity() {
         })
 
         itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
+
+    /* ===================== REQUEST NOTIFICATION PERMISSION ===================== */
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
+            }
+        }
     }
 }
