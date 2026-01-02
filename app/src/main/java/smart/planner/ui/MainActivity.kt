@@ -7,13 +7,13 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items // Cần thiết để sử dụng items(list)
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState // Cần thư viện runtime-livedata
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -79,7 +79,6 @@ fun MainScreen(viewModel: TaskViewModel = viewModel()) {
                 Text(text = "Chưa có task nào", color = Color.Gray)
             }
         } else {
-            // SỬA ĐỔI TẠI ĐÂY: Sử dụng items(tasks) thay vì items(count = ...)
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -119,6 +118,13 @@ fun TaskCard(task: Task, onDelete: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )
+                if (task.deadline > 0) {
+                    Text(
+                        text = "Deadline: ${java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date(task.deadline))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.DarkGray
+                    )
+                }
             }
 
             IconButton(onClick = onDelete) {
