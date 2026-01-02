@@ -31,7 +31,7 @@ fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createNotificationChannel()
+
         // Test API calls (có thể comment lại sau khi test xong)
         //smart.planner.data.api.ApiTestExample.testAllApis()
         CoroutinesIOTest.testDispatchersIO()
@@ -45,21 +45,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "task_reminder", // Channel ID
-                "Task Reminder", // Channel Name
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Reminders for upcoming tasks"
-            }
 
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-    }
 
 }
 

@@ -1,7 +1,11 @@
 package smart.planner.view
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +20,7 @@ import smart.planner.R
 import smart.planner.data.model.Task
 import smart.planner.databinding.ActivityHomeBinding
 import smart.planner.ui.adapter.UpcomingTaskAdapter
+import smart.planner.ui.screen.TaskDetailActivity
 
 class HomeActivity : AppCompatActivity() {
 
@@ -36,8 +41,21 @@ class HomeActivity : AppCompatActivity() {
         observeData()
         setupCalendar()
         setupBottomNavigation()
+        createNotificationChannel()
     }
+    private fun createNotificationChannel() {
+        val channel = NotificationChannel(
+            "task_reminder", // Channel ID
+            "Task Reminder", // Channel Name
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Reminders for upcoming tasks"
+        }
 
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbarHome)
     }
@@ -45,7 +63,13 @@ class HomeActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         taskAdapter = UpcomingTaskAdapter(
             onTaskClick = { task ->
-                Toast.makeText(this, "Clicked: ${task.title}", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, TaskDetailActivity::class.java).apply {
+                    putExtra("taskId", task.id)
+                    putExtra("taskTitle", task.title)
+                    putExtra("taskDescription", task.description)
+                    putExtra("taskDeadline", task.deadline)
+                }
+                startActivity(intent)
             },
             onCheckboxClick = { task, isChecked ->
                 task.isCompleted = isChecked
@@ -60,6 +84,7 @@ class HomeActivity : AppCompatActivity() {
                 applyDeadlineDecorators(calculateDeadlineDays(allTasks))
             }
         )
+
 
         binding.rvUpcomingTasks.apply {
             layoutManager = LinearLayoutManager(this@HomeActivity)

@@ -1,6 +1,6 @@
 package smart.planner.ui.adapter
 
-import android.R
+
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
