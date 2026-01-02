@@ -44,11 +44,10 @@ class FirebaseRepository {
             tasks.forEach { task ->
                 val taskWithTimestamp = mapOf(
                     "id" to task.id,
-                    "title" to task.title,
+                    "name" to task.name,
                     "description" to task.description,
-                    "subjectId" to task.subjectId,
+                    "subject" to task.subject,
                     "deadline" to task.deadline,
-                    "isCompleted" to task.isCompleted,
                     "lastModified" to ServerValue.TIMESTAMP // Server timestamp
                 )
                 tasksRef.child(task.id.toString()).setValue(taskWithTimestamp).await()
@@ -77,11 +76,10 @@ class FirebaseRepository {
                     if (existingTask == null || newTimestamp > (existingTask.lastModified ?: 0)) {
                         currentData.value = mapOf(
                             "id" to task.id,
-                            "title" to task.title,
+                            "name" to task.name,
                             "description" to task.description,
-                            "subjectId" to task.subjectId,
+                            "subject" to task.subject,
                             "deadline" to task.deadline,
-                            "isCompleted" to task.isCompleted,
                             "lastModified" to newTimestamp
                         )
                     }
@@ -182,11 +180,10 @@ class FirebaseRepository {
         try {
             val taskWithTimestamp = mapOf(
                 "id" to task.id,
-                "title" to task.title,
+                "name" to task.name,
                 "description" to task.description,
-                "subjectId" to task.subjectId,
+                "subject" to task.subject,
                 "deadline" to task.deadline,
-                "isCompleted" to task.isCompleted,
                 "lastModified" to ServerValue.TIMESTAMP
             )
             tasksRef.child(task.id.toString()).setValue(taskWithTimestamp).await()
@@ -217,46 +214,9 @@ class FirebaseRepository {
     }
 
     /**
-     * Update task completion status with conflict resolution
+     * Update task (Note: Task entity doesn't have isCompleted field, removed this method)
+     * Use updateTask() instead
      */
-    suspend fun updateTaskStatus(taskId: Int, isCompleted: Boolean) = suspendCoroutine<Unit> { continuation ->
-        try {
-            val taskRef = tasksRef.child(taskId.toString())
-
-            taskRef.runTransaction(object : Transaction.Handler {
-                override fun doTransaction(currentData: MutableData): Transaction.Result {
-                    val updates = mapOf(
-                        "isCompleted" to isCompleted,
-                        "lastModified" to System.currentTimeMillis()
-                    )
-
-                    currentData.value?.let { value ->
-                        if (value is MutableMap<*, *>) {
-                            @Suppress("UNCHECKED_CAST")
-                            (value as MutableMap<String, Any>).putAll(updates)
-                        }
-                    }
-
-                    return Transaction.success(currentData)
-                }
-
-                override fun onComplete(
-                    error: DatabaseError?,
-                    committed: Boolean,
-                    snapshot: DataSnapshot?
-                ) {
-                    if (error != null) {
-                        continuation.resumeWithException(error.toException())
-                    } else {
-                        continuation.resume(Unit)
-                    }
-                }
-            })
-        } catch (e: Exception) {
-            e.printStackTrace()
-            continuation.resumeWithException(Exception("Failed to update task status: ${e.message}"))
-        }
-    }
 
     /**
      * Check connection status
@@ -286,19 +246,17 @@ class FirebaseRepository {
 // Helper data class with timestamp
 private data class TaskWithTimestamp(
     val id: Int = 0,
-    val title: String = "",
+    val name: String = "",
     val description: String = "",
-    val subjectId: Int = 0,
+    val subject: String = "",
     val deadline: Long = 0,
-    val isCompleted: Boolean = false,
     val lastModified: Long? = null
 ) {
     fun toTask() = Task(
         id = id,
-        title = title,
+        name = name,
         description = description,
-        subjectId = subjectId,
-        deadline = deadline,
-        isCompleted = isCompleted
+        subject = subject,
+        deadline = deadline
     )
 }

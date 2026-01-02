@@ -31,13 +31,13 @@ class TaskListActivity : ComponentActivity() {
         // Khởi tạo adapter
         val taskAdapter = TaskAdapter()
 
-        // RecyclerView
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
+        // RecyclerView - sử dụng ID đúng từ layout
+        val recyclerView = findViewById<RecyclerView>(R.id.rvTaskList)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = taskAdapter
 
-        // ProgressBar (Loading indicator)
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+        // ProgressBar - layout không có ProgressBar, bỏ qua hoặc thêm vào layout nếu cần
+        // val progressBar = findViewById<ProgressBar>(R.id.progressBar)
 
         /* ===================== OBSERVE DATA ===================== */
 
@@ -49,16 +49,17 @@ class TaskListActivity : ComponentActivity() {
             taskViewModel.syncState.collect { state ->
                 when (state) {
                     is SyncState.Syncing -> {
-                        progressBar.visibility = View.VISIBLE
+                        // ProgressBar không có trong layout, có thể thêm loading indicator nếu cần
+                        // progressBar.visibility = View.VISIBLE
                     }
 
                     is SyncState.Success,
                     is SyncState.Idle -> {
-                        progressBar.visibility = View.GONE
+                        // progressBar.visibility = View.GONE
                     }
 
                     is SyncState.Error -> {
-                        progressBar.visibility = View.GONE
+                        // progressBar.visibility = View.GONE
                         Toast.makeText(
                             this@TaskListActivity,
                             state.message,

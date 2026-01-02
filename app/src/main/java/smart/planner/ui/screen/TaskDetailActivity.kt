@@ -3,12 +3,7 @@ package smart.planner.ui.screen
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material3.Button
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.wear.compose.material.Button
 import smart.planner.R
 
 class TaskDetailActivity : AppCompatActivity() {

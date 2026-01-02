@@ -9,24 +9,34 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 import smart.planner.R
+import smart.planner.data.model.Subject
+import smart.planner.ui.viewmodel.SubjectViewModel
 import smart.planner.ui.viewmodel.TaskViewModel
+import smart.planner.ui.viewmodel.UserViewModel
 import java.util.Calendar
 
 class AddTaskActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: TaskViewModel
+    private lateinit var taskViewModel: TaskViewModel
+    private lateinit var subjectViewModel: SubjectViewModel
+    private lateinit var userViewModel: UserViewModel
+    
+    private var userId: Int? = null
+    private var subjects: List<Subject> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_task)
 
-        // 1. Khởi tạo ViewModel cho AndroidViewModel
-        viewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        )[TaskViewModel::class.java]
+        // 1. Khởi tạo ViewModels
+        val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        taskViewModel = ViewModelProvider(this, viewModelFactory)[TaskViewModel::class.java]
+        subjectViewModel = ViewModelProvider(this, viewModelFactory)[SubjectViewModel::class.java]
+        userViewModel = ViewModelProvider(this, viewModelFactory)[UserViewModel::class.java]
 
         // 2. Ánh xạ View từ layout XML
         val etTaskName = findViewById<TextInputEditText>(R.id.etTaskName)
@@ -35,36 +45,67 @@ class AddTaskActivity : AppCompatActivity() {
         val datePicker = findViewById<DatePicker>(R.id.datePicker)
         val btnSave = findViewById<Button>(R.id.btnSaveTask)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
-        val btnReviewTasks = findViewById<Button>(R.id.btnReviewTasks) // Nút mới bổ sung
+        val btnReviewTasks = findViewById<Button>(R.id.btnReviewTasks)
 
-        // 3. Setup Spinner với danh sách môn học
-        val subjects = arrayOf("Toán", "Văn", "Anh", "Lập trình", "Kỹ thuật phần mềm")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, subjects)
-        spinnerSubject.adapter = adapter
+        // 3. Load userId và subjects từ database
+        lifecycleScope.launch {
+            userId = userViewModel.getCurrentUserIdAsync()
+            if (userId == null) {
+                Toast.makeText(this@AddTaskActivity, "Vui lòng đăng nhập trước", Toast.LENGTH_LONG).show()
+                finish()
+                return@launch
+            }
+
+            subjectViewModel.getSubjectsByUserId(userId!!).observe(this@AddTaskActivity) { loadedSubjects ->
+                subjects = loadedSubjects
+                if (subjects.isEmpty()) {
+                    Toast.makeText(this@AddTaskActivity, "Chưa có môn học nào. Vui lòng thêm môn học trước.", Toast.LENGTH_LONG).show()
+                    spinnerSubject.adapter = ArrayAdapter(this@AddTaskActivity, android.R.layout.simple_spinner_dropdown_item, listOf("No Subjects"))
+                } else {
+                    val subjectNames = subjects.map { it.name }
+                    val adapter = ArrayAdapter(this@AddTaskActivity, android.R.layout.simple_spinner_dropdown_item, subjectNames)
+                    spinnerSubject.adapter = adapter
+                }
+            }
+        }
 
         // 4. Xử lý nút Lưu Task
         btnSave.setOnClickListener {
             val name = etTaskName.text.toString().trim()
             val desc = etDescription.text.toString().trim()
-            val subject = spinnerSubject.selectedItem.toString()
+            val subjectIndex = spinnerSubject.selectedItemPosition
 
             val calendar = Calendar.getInstance()
             calendar.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
             val deadline = calendar.timeInMillis
 
-            if (name.isNotEmpty()) {
-                viewModel.addTask(name, subject, deadline, desc)
-                Toast.makeText(this, "Đã thêm task thành công!", Toast.LENGTH_SHORT).show()
-
-                // SỬA TẠI ĐÂY: Thay vì finish(), ta reset các trường nhập liệu
-                etTaskName.text?.clear()
-                etDescription.text?.clear()
-                etTaskName.requestFocus() // Đưa con trỏ về ô nhập tên bài tập
-
-            } else {
+            // Validation
+            if (name.isEmpty()) {
                 etTaskName.error = "Tên bài tập không được để trống"
                 Toast.makeText(this, "Vui lòng nhập tên bài tập", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            if (userId == null) {
+                Toast.makeText(this, "Vui lòng đăng nhập trước", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (subjects.isEmpty() || subjectIndex < 0 || subjectIndex >= subjects.size) {
+                Toast.makeText(this, "Vui lòng chọn môn học", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val selectedSubject = subjects[subjectIndex]
+            val subjectName = selectedSubject.name
+
+            taskViewModel.addTask(name, subjectName, deadline, desc)
+            Toast.makeText(this, "Đã thêm task thành công!", Toast.LENGTH_SHORT).show()
+
+            // Reset các trường nhập liệu
+            etTaskName.text?.clear()
+            etDescription.text?.clear()
+            etTaskName.requestFocus()
         }
 
         // 5. Xử lý nút Hủy

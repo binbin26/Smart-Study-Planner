@@ -15,11 +15,12 @@ data class TaskWithSubject(
          * Map list Task với list Subject để tạo TaskWithSubject
          */
         fun mapTasksWithSubjects(tasks: List<Task>, subjects: List<Subject>): List<TaskWithSubject> {
-            val subjectMap = subjects.associateBy { it.id }
+            // Task entity uses subject: String, so we match by name instead of ID
+            val subjectMap = subjects.associateBy { it.name }
             return tasks.map { task ->
                 TaskWithSubject(
                     task = task,
-                    subjectName = subjectMap[task.subjectId]?.name
+                    subjectName = task.subject // Task already has subject as String
                 )
             }
         }

@@ -65,17 +65,17 @@ class HomeActivity : AppCompatActivity() {
             onTaskClick = { task ->
                 val intent = Intent(this, TaskDetailActivity::class.java).apply {
                     putExtra("taskId", task.id)
-                    putExtra("taskTitle", task.title)
+                    putExtra("taskTitle", task.name) // Đổi title → name
                     putExtra("taskDescription", task.description)
                     putExtra("taskDeadline", task.deadline)
                 }
                 startActivity(intent)
             },
             onCheckboxClick = { task, isChecked ->
-                task.isCompleted = isChecked
+                // Task entity không có isCompleted field, chỉ hiển thị toast
                 Toast.makeText(
                     this,
-                    if (isChecked) "Đã hoàn thành: ${task.title}" else "Chưa hoàn thành: ${task.title}",
+                    if (isChecked) "Đã hoàn thành: ${task.name}" else "Chưa hoàn thành: ${task.name}",
                     Toast.LENGTH_SHORT
                 ).show()
                 updateDashboard(taskAdapter.currentList)
@@ -97,27 +97,24 @@ class HomeActivity : AppCompatActivity() {
             val mockTasks = listOf(
                 Task(
                     id = 1,
-                    title = "Bài tập Android",
+                    name = "Bài tập Android", // Đổi title → name
                     description = "Hoàn thành bài tập chương 3",
-                    subjectId = 1,
-                    deadline = System.currentTimeMillis() + 86400000, // +1 ngày
-                    isCompleted = false
+                    subject = "Lập trình", // Đổi subjectId → subject (String)
+                    deadline = System.currentTimeMillis() + 86400000 // +1 ngày
                 ),
                 Task(
                     id = 2,
-                    title = "Đọc SGK Văn",
+                    name = "Đọc SGK Văn", // Đổi title → name
                     description = "Đọc bài thơ Đất Nước",
-                    subjectId = 2,
-                    deadline = System.currentTimeMillis() + 172800000, // +2 ngày
-                    isCompleted = false
+                    subject = "Văn học", // Đổi subjectId → subject (String)
+                    deadline = System.currentTimeMillis() + 172800000 // +2 ngày
                 ),
                 Task(
                     id = 3,
-                    title = "Lab Vật Lý",
+                    name = "Lab Vật Lý", // Đổi title → name
                     description = "Chuẩn bị báo cáo thí nghiệm",
-                    subjectId = 3,
-                    deadline = System.currentTimeMillis() + 259200000, // +3 ngày
-                    isCompleted = true
+                    subject = "Vật Lý", // Đổi subjectId → subject (String)
+                    deadline = System.currentTimeMillis() + 259200000 // +3 ngày
                 )
             )
             allTasks = mockTasks
@@ -157,7 +154,9 @@ class HomeActivity : AppCompatActivity() {
         val urgentCount = tasks.filter {
             it.deadline - System.currentTimeMillis() < 2 * 86400000
         }.size
-        val completedCount = tasks.count { it.isCompleted }
+        // Task entity không có isCompleted field, đếm tasks có deadline đã qua
+        val currentTime = System.currentTimeMillis()
+        val completedCount = tasks.count { it.deadline < currentTime }
         val progress = if (tasks.isNotEmpty()) (completedCount * 100) / tasks.size else 0
 
         binding.tvSubtitle.text = "Hôm nay bạn có ${tasks.size} bài tập cần hoàn thành"

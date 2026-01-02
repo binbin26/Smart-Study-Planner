@@ -61,6 +61,6 @@ class TaskAdapter(
         val subject: TextView = itemView.findViewById(R.id.tvTaskSubject)
         val deadline: TextView = itemView.findViewById(R.id.tvDeadline)
         val status: TextView = itemView.findViewById(R.id.tvStatus)
-        val checkBox: CheckBox = itemView.findViewById(R.id.checkbox)
+        val checkBox: CheckBox = itemView.findViewById(R.id.cbDone) // Sử dụng ID đúng từ layout
     }
 }

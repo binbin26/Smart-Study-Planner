@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-=======
-    <!-- Permission để thực hiện API calls -->
->>>>>>> origin/Tuấn
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
-=======
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
->>>>>>> origin/Phát
 
     <application
         android:name=".SmartPlannerApp"
@@ -24,20 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartStudyPlanner">
 
-<<<<<<< HEAD
-        <activity
-            android:name=".ui.screen.TaskDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".view.HomeActivity"
-            android:exported="true" />
-        <activity
-            android:name=".smart.planner.ui.MainActivity"
-=======
         <!-- Main screen -->
         <activity
             android:name="smart.planner.MainActivity"
->>>>>>> origin/Phát
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.SmartStudyPlanner">
@@ -47,7 +30,7 @@
             </intent-filter>
         </activity>
 
-<<<<<<< HEAD
+        <!-- Add Task Activity -->
         <activity
             android:name="smart.planner.ui.AddTaskActivity"
             android:exported="false"
@@ -55,13 +38,24 @@
             android:theme="@style/Theme.SmartStudyPlanner"
             android:windowSoftInputMode="adjustPan"/>
 
+        <!-- Check Task Activity -->
         <activity
             android:name="smart.planner.ui.CheckTaskActivity"
             android:exported="false"
             android:label="Kiểm tra Task"
             android:theme="@style/Theme.SmartStudyPlanner"
             android:windowSoftInputMode="adjustPan"/>
-=======
+
+        <!-- Task Detail Activity -->
+        <activity
+            android:name=".ui.screen.TaskDetailActivity"
+            android:exported="false" />
+
+        <!-- Home Activity -->
+        <activity
+            android:name=".view.HomeActivity"
+            android:exported="true" />
+
         <!-- Stats screen -->
         <activity
             android:name=".ui.StatsActivity"
@@ -72,7 +66,6 @@
         <receiver
             android:name=".notification.TaskReminderReceiver"
             android:exported="false" />
->>>>>>> origin/Phát
 
     </application>
 
