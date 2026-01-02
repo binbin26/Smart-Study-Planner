@@ -1,62 +1,133 @@
-package smart.planner.smart.planner.ui
+package smart.planner
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items // Cần thiết để sử dụng items(list)
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState // Cần thư viện runtime-livedata
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import smart.planner.data.test.CoroutinesIOTest
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import smart.planner.data.model.Task
+import smart.planner.ui.AddTaskActivity
+import smart.planner.ui.viewmodel.TaskViewModel
 
-// This is a placeholder theme. You can customize it in another file (e.g., ui/theme/Theme.kt)
 @Composable
 fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
     MaterialTheme {
-        // A surface container using the 'background' color from the theme
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             content()
         }
     }
 }
 
-// 1. Change AppCompatActivity to ComponentActivity
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Test API calls (có thể comment lại sau khi test xong)
-        //smart.planner.data.api.ApiTestExample.testAllApis()
-        CoroutinesIOTest.testDispatchersIO()
-        // 2. Use setContent for Jetpack Compose
         setContent {
-            // 3. Call your Compose theme and content
             SmartStudyPlannerTheme {
-                // You can place your main screen composable here
-                // For now, we will just show a greeting
-                Greeting(name = "User")
+                MainScreen()
             }
         }
     }
 }
 
-// A simple example of a Composable function
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun MainScreen(viewModel: TaskViewModel = viewModel()) {
+    val context = LocalContext.current
+    // Quan sát LiveData và chuyển thành State để Compose tự render lại khi Room thay đổi
+    val tasks by viewModel.allTasks.observeAsState(initial = emptyList())
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "My Tasks",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        Button(
+            onClick = {
+                val intent = Intent(context, AddTaskActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Mở Thêm Task")
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        if (tasks.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Chưa có task nào", color = Color.Gray)
+            }
+        } else {
+            // SỬA ĐỔI TẠI ĐÂY: Sử dụng items(tasks) thay vì items(count = ...)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(tasks) { task ->
+                    TaskCard(
+                        task = task,
+                        onDelete = { viewModel.deleteTask(task) }
+                    )
+                }
+            }
+        }
+    }
 }
 
-// A preview for the Greeting Composable
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    SmartStudyPlannerTheme {
-        Greeting("Android")
+fun TaskCard(task: Task, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Môn: ${task.subject}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.DarkGray
+                )
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Xóa Task",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
 }

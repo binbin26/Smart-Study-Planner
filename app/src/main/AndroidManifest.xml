@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permission để thực hiện API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -15,6 +14,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartStudyPlanner">
+
         <activity
             android:name=".smart.planner.ui.MainActivity"
             android:exported="true"
@@ -22,10 +22,24 @@
             android:theme="@style/Theme.SmartStudyPlanner">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="smart.planner.ui.AddTaskActivity"
+            android:exported="false"
+            android:label="Thêm Task Mới"
+            android:theme="@style/Theme.SmartStudyPlanner"
+            android:windowSoftInputMode="adjustPan"/>
+
+        <activity
+            android:name="smart.planner.ui.CheckTaskActivity"
+            android:exported="false"
+            android:label="Kiểm tra Task"
+            android:theme="@style/Theme.SmartStudyPlanner"
+            android:windowSoftInputMode="adjustPan"/>
+
     </application>
 
 </manifest>
