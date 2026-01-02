@@ -85,7 +85,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0")) // Cập nhật bản mới ổn định
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-database") // Thêm dòng này (bản chính)
-
+    implementation("androidx.compose.runtime:runtime-livedata")
     /* ===================== TEST ===================== */
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

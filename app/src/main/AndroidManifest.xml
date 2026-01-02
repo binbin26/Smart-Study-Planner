@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartStudyPlanner">
 
+        <!-- Main screen -->
         <activity
             android:name="smart.planner.MainActivity"
             android:exported="true"
@@ -26,6 +27,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Stats screen -->
+        <activity
+            android:name=".ui.StatsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SmartStudyPlanner" />
+
+        <!-- Notification receiver -->
         <receiver
             android:name=".notification.TaskReminderReceiver"
             android:exported="false" />

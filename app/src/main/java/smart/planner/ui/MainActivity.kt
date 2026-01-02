@@ -20,7 +20,8 @@ import smart.planner.data.entity.Task
 import smart.planner.notification.NotificationScheduler
 import smart.planner.ui.adapter.TaskAdapter
 import smart.planner.viewmodel.TaskViewModel
-
+import android.content.Intent
+import smart.planner.ui.StatsActivity
 class MainActivity : ComponentActivity() {
 
     private val taskViewModel: TaskViewModel by viewModels()
@@ -54,6 +55,10 @@ class MainActivity : ComponentActivity() {
 
         /* ===================== UI ===================== */
         setContentView(R.layout.activity_task_list)
+
+
+        /* ===================== TEST STATS SCREEN (bo // de test )===================== */
+        //startActivity(Intent(this, StatsActivity::class.java))
 
         /* ===================== PERMISSION (ANDROID 13+) ===================== */
         requestNotificationPermission()
