@@ -2,17 +2,17 @@ package smart.planner.ui
 
 import android.os.Bundle
 import android.view.View
+import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.widget.ProgressBar
+import kotlinx.coroutines.launch
 import smart.planner.R
 import smart.planner.ui.adapter.TaskAdapter
 import smart.planner.viewmodel.TaskViewModel
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import android.widget.Toast
 import smart.planner.viewmodel.SyncState
 
 class TaskListActivity : ComponentActivity() {
@@ -25,18 +25,23 @@ class TaskListActivity : ComponentActivity() {
         // Sử dụng đúng layout XML
         setContentView(R.layout.activity_task_list)
 
-        // Lấy subjectId từ Intent
+        // Lấy subjectId từ Intent (giữ nguyên)
         val subjectId = intent.getIntExtra("subjectId", 0)
 
-        // Khởi tạo adapter
-        val taskAdapter = TaskAdapter()
+        // ===================== ADAPTER =====================
+        // ✅ SỬA TÊN CALLBACK CHO ĐÚNG VỚI TaskAdapter
+        val taskAdapter = TaskAdapter(
+            onCheckedChange = { task, isChecked ->
+                taskViewModel.updateTaskDone(task, isChecked)
+            }
+        )
 
-        // RecyclerView
+        // ===================== RECYCLER VIEW =====================
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = taskAdapter
 
-        // ProgressBar (Loading indicator)
+        // ===================== PROGRESS BAR =====================
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
 
         /* ===================== OBSERVE DATA ===================== */
@@ -45,6 +50,8 @@ class TaskListActivity : ComponentActivity() {
         taskViewModel.taskList.observe(this) { tasks ->
             taskAdapter.submitList(tasks)
         }
+
+        // Observe sync state
         lifecycleScope.launch {
             taskViewModel.syncState.collect { state ->
                 when (state) {
@@ -68,17 +75,10 @@ class TaskListActivity : ComponentActivity() {
                 }
             }
         }
-        // Observe loading state (Task 6)
-
 
         /* ===================== LOAD DATA ===================== */
 
-        // Load các công việc từ ViewModel
-        // 1️⃣ Sync Firebase → Room
+        // Load các công việc từ Firebase Realtime DB
         taskViewModel.loadFromRealtimeDatabase()
-
-
-// 2️⃣ Load từ Room
-
     }
 }

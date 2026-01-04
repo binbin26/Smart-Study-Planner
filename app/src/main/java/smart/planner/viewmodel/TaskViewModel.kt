@@ -5,15 +5,16 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
 import smart.planner.data.database.AppDatabase
 import smart.planner.data.dao.TaskRealtimeDao
 import smart.planner.data.entity.Task
 import smart.planner.data.entity.QuoteCache
 import smart.planner.data.firebase.toEntity
+import smart.planner.notification.NotificationScheduler
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -70,9 +71,18 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         _syncState.value = SyncState.Syncing
 
         try {
+            // Update on Firebase
             realtimeDao.updateTaskDone(task.firebaseId, isDone)
 
-            // update UI local
+            // 🔥 CANCEL NOTIFICATION + ALARM KHI TASK HOÀN THÀNH
+            if (isDone) {
+                NotificationScheduler.cancel(
+                    getApplication(),
+                    task.firebaseId
+                )
+            }
+
+            // Update UI local
             val updatedList = _taskList.value
                 ?.map {
                     if (it.firebaseId == task.firebaseId) {
@@ -82,11 +92,9 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
                 ?: emptyList()
 
             _taskList.postValue(updatedList)
-
-
-            _taskList.postValue(updatedList)
             _taskStatus.postValue("Task updated")
             _syncState.value = SyncState.Success
+
         } catch (e: Exception) {
             Log.e("RTDB", "Update task failed", e)
             _taskStatus.postValue("Failed to update task")
@@ -111,13 +119,13 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             _taskList.postValue(updatedList)
             _taskStatus.postValue("Task deleted")
             _syncState.value = SyncState.Success
+
         } catch (e: Exception) {
             Log.e("RTDB", "Delete task failed", e)
             _taskStatus.postValue("Failed to delete task")
             _syncState.value = SyncState.Error("Delete task failed")
         }
     }
-
 
     /* ===================== QUOTE CACHE (GIỮ NGUYÊN) ===================== */
 

@@ -22,6 +22,7 @@ import smart.planner.ui.adapter.TaskAdapter
 import smart.planner.viewmodel.TaskViewModel
 import android.content.Intent
 import smart.planner.ui.StatsActivity
+
 class MainActivity : ComponentActivity() {
 
     private val taskViewModel: TaskViewModel by viewModels()
@@ -56,28 +57,40 @@ class MainActivity : ComponentActivity() {
         /* ===================== UI ===================== */
         setContentView(R.layout.activity_task_list)
 
-
-        /* ===================== TEST STATS SCREEN (bo // de test )===================== */
-        //startActivity(Intent(this, StatsActivity::class.java))
+        /* ===================== TEST STATS SCREEN ===================== */
+        // startActivity(Intent(this, StatsActivity::class.java))
 
         /* ===================== PERMISSION (ANDROID 13+) ===================== */
         requestNotificationPermission()
 
-        /* ===================== TEST NOTIFICATION (DEADLINE 1 PHÚT) ===================== */
-        NotificationScheduler.scheduleTest(
-            context = this,
-            taskId = "test_task_1",
-            title = "Deadline test 1 phút"
-        )
-
-        /* ===================== ADAPTER ===================== */
+        /* ===================== ADAPTER (🔥 KHAI BÁO SỚM) ===================== */
         val taskAdapter = TaskAdapter { task, isDone ->
             taskViewModel.updateTaskDone(task, isDone)
         }
 
+        /* ===================== RECYCLER VIEW ===================== */
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = taskAdapter
+
+        /* ===================== TEST NOTIFICATION (1 PHÚT) ===================== */
+        taskViewModel.taskList.observe(this) { tasks ->
+            taskAdapter.submitList(tasks)
+
+            tasks
+                .filter { it.isDone == false }
+                .forEach { task ->
+                    NotificationScheduler.scheduleTest(
+                        context = this,
+                        taskId = task.firebaseId,   // ⚠️ mỗi task 1 ID
+                        title = task.title
+                    )
+
+                    Log.d("TEST", "Scheduled for ${task.firebaseId}")
+                }
+        }
+
+
 
         /* ===================== OBSERVE TASK LIST ===================== */
         taskViewModel.taskList.observe(this) { tasks ->
