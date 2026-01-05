@@ -1,23 +1,30 @@
-package smart.planner.ui
+package smart.planner
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
-import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.launch
-import smart.planner.data.local.AppDatabase
-import smart.planner.data.sync.SubjectSyncService
-import smart.planner.data.sync.SyncManager
-import smart.planner.data.sync.TaskSyncService
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import smart.planner.data.model.Task
+import smart.planner.data.test.CoroutinesIOTest
+import smart.planner.ui.AddTaskActivity
+import smart.planner.ui.viewmodel.TaskViewModel
 
 @Composable
 fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
@@ -39,123 +46,108 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.d(TAG, "========================================")
-        Log.d(TAG, "🚀 App Starting...")
-        Log.d(TAG, "========================================")
-
-        smart.planner.data.test.CoroutinesIOTest.testDispatchersIO()
-
-        setupSync()
-        startSync()
-
+        // Test API calls (có thể comment lại sau khi test xong)
+        //smart.planner.data.api.ApiTestExample.testAllApis()
+        CoroutinesIOTest.testDispatchersIO()
+        
         setContent {
             SmartStudyPlannerTheme {
-                Greeting(name = "User")
+                MainScreen()
             }
-        }
-
-        Log.d(TAG, "✅ App Started Successfully")
-    }
-
-    private fun setupSync() {
-        Log.d(TAG, "📦 Setting up sync services...")
-
-        try {
-            val database = AppDatabase.getDatabase(applicationContext)
-            Log.d(TAG, "  ✅ Room Database: OK")
-
-            val firebaseDb = FirebaseDatabase.getInstance().reference
-            Log.d(TAG, "  ✅ Firebase Database: OK")
-
-            syncManager = SyncManager(applicationContext)
-            Log.d(TAG, "  ✅ SyncManager: Created")
-
-            subjectSyncService = SubjectSyncService(
-                subjectDao = database.subjectDao(),
-                firebaseDatabase = firebaseDb,
-                syncManager = syncManager
-            )
-            Log.d(TAG, "  ✅ SubjectSyncService: Created")
-
-            taskSyncService = TaskSyncService(
-                taskDao = database.taskDao(),
-                firebaseDatabase = firebaseDb,
-                syncManager = syncManager
-            )
-            Log.d(TAG, "  ✅ TaskSyncService: Created")
-
-            Log.d(TAG, "✅ All sync services initialized!")
-
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Error setting up sync: ${e.message}")
-            e.printStackTrace()
-        }
-    }
-
-    private fun startSync() {
-        Log.d(TAG, "🔄 Starting sync...")
-
-        lifecycleScope.launch {
-            try {
-                Log.d(TAG, "  📡 Starting Firebase listeners...")
-                subjectSyncService.startListening()
-                taskSyncService.startListening()
-                Log.d(TAG, "  ✅ Listeners started")
-
-                Log.d(TAG, "  🔄 Running initial sync...")
-
-                val subjectSyncResult = subjectSyncService.initialSync()
-                if (subjectSyncResult.isSuccess) {
-                    Log.d(TAG, "  ✅ Subjects synced")
-                } else {
-                    Log.w(TAG, "  ⚠️ Subject sync failed (may be offline)")
-                }
-
-                val taskSyncResult = taskSyncService.initialSync()
-                if (taskSyncResult.isSuccess) {
-                    Log.d(TAG, "  ✅ Tasks synced")
-                } else {
-                    Log.w(TAG, "  ⚠️ Task sync failed (may be offline)")
-                }
-
-                Log.d(TAG, "✅ Sync completed!")
-                Log.d(TAG, "========================================")
-
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Error during sync: ${e.message}")
-                e.printStackTrace()
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        Log.d(TAG, "🛑 App Stopping...")
-
-        try {
-            syncManager.cleanup()
-            subjectSyncService.cleanup()
-            taskSyncService.cleanup()
-            Log.d(TAG, "✅ Sync services cleaned up")
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Error cleaning up: ${e.message}")
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun MainScreen(viewModel: TaskViewModel = viewModel()) {
+    val context = LocalContext.current
+    // Quan sát LiveData và chuyển thành State để Compose tự render lại khi Room thay đổi
+    val tasks by viewModel.allTasks.observeAsState(initial = emptyList())
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "My Tasks",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        Button(
+            onClick = {
+                val intent = Intent(context, AddTaskActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Mở Thêm Task")
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        if (tasks.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Chưa có task nào", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(tasks) { task ->
+                    TaskCard(
+                        task = task,
+                        onDelete = { viewModel.deleteTask(task) }
+                    )
+                }
+            }
+        }
+    }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    SmartStudyPlannerTheme {
-        Greeting("Android")
+fun TaskCard(task: Task, onDelete: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Môn: ${task.subject}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.DarkGray
+                )
+                if (task.deadline > 0) {
+                    Text(
+                        text = "Deadline: ${java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date(task.deadline))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.DarkGray
+                    )
+                }
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Xóa Task",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
+        }
     }
 }
