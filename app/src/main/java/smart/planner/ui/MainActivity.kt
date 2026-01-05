@@ -22,6 +22,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import smart.planner.data.model.Task
+import smart.planner.data.sync.SubjectSyncService
+import smart.planner.data.sync.SyncManager
+import smart.planner.data.sync.TaskSyncService
 import smart.planner.data.test.CoroutinesIOTest
 import smart.planner.ui.AddTaskActivity
 import smart.planner.ui.viewmodel.TaskViewModel
