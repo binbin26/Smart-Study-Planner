@@ -57,6 +57,10 @@ class MainActivity : ComponentActivity() {
         /* ===================== UI ===================== */
         setContentView(R.layout.activity_task_list)
 
+        /* ===================== TEST COMPOSE TASK LIST ===================== */
+        //startActivity(Intent(this, smart.planner.ui.TaskListActivity::class.java))
+        //finish()
+
         /* ===================== TEST STATS SCREEN ===================== */
         // startActivity(Intent(this, StatsActivity::class.java))
 

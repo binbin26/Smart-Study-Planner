@@ -1,19 +1,23 @@
 package smart.planner.ui
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.launch
-import smart.planner.R
-import smart.planner.ui.adapter.TaskAdapter
-import smart.planner.viewmodel.TaskViewModel
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import smart.planner.data.entity.Task
+import smart.planner.ui.task.TaskList
 import smart.planner.viewmodel.SyncState
+import smart.planner.viewmodel.TaskViewModel
 
 class TaskListActivity : ComponentActivity() {
 
@@ -22,63 +26,62 @@ class TaskListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Sử dụng đúng layout XML
-        setContentView(R.layout.activity_task_list)
-
-        // Lấy subjectId từ Intent (giữ nguyên)
+        // ✅ GIỮ NGUYÊN: lấy subjectId (chưa dùng thì cứ giữ)
         val subjectId = intent.getIntExtra("subjectId", 0)
 
-        // ===================== ADAPTER =====================
-        // ✅ SỬA TÊN CALLBACK CHO ĐÚNG VỚI TaskAdapter
-        val taskAdapter = TaskAdapter(
-            onCheckedChange = { task, isChecked ->
-                taskViewModel.updateTaskDone(task, isChecked)
-            }
-        )
+        // ✅ GIỮ NGUYÊN: load từ Firebase
+        taskViewModel.loadFromRealtimeDatabase()
 
-        // ===================== RECYCLER VIEW =====================
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = taskAdapter
+        setContent {
 
-        // ===================== PROGRESS BAR =====================
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+            val context = LocalContext.current
 
-        /* ===================== OBSERVE DATA ===================== */
+            // 🔁 Thay observe RecyclerView bằng Compose observe
+            val tasks by taskViewModel.taskList.observeAsState(emptyList())
 
-        // Observe danh sách task
-        taskViewModel.taskList.observe(this) { tasks ->
-            taskAdapter.submitList(tasks)
-        }
+            // 🔁 Thay lifecycleScope.collect bằng Compose
+            val syncState by taskViewModel.syncState.collectAsStateWithLifecycle()
 
-        // Observe sync state
-        lifecycleScope.launch {
-            taskViewModel.syncState.collect { state ->
-                when (state) {
-                    is SyncState.Syncing -> {
-                        progressBar.visibility = View.VISIBLE
+            Box(modifier = Modifier.fillMaxSize()) {
+
+                // ================= TASK LIST =================
+                TaskList(
+                    tasks = tasks,
+
+                    // ✅ GIỮ NGUYÊN LOGIC
+                    onCheckedChange = { task: Task, isChecked: Boolean ->
+                        taskViewModel.updateTaskDone(task, isChecked)
+                    },
+
+                    // ✅ NAVIGATE (bạn có thể đổi Activity khác)
+                    onItemClick = { task ->
+                        val intent = Intent(context, StatsActivity::class.java)
+                        intent.putExtra("firebaseId", task.firebaseId)
+                        context.startActivity(intent)
                     }
+                )
 
-                    is SyncState.Success,
-                    is SyncState.Idle -> {
-                        progressBar.visibility = View.GONE
+                // ================= LOADING =================
+                if (syncState is SyncState.Syncing) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
+                }
 
-                    is SyncState.Error -> {
-                        progressBar.visibility = View.GONE
+                // ================= ERROR =================
+                if (syncState is SyncState.Error) {
+                    LaunchedEffect(syncState) {
                         Toast.makeText(
-                            this@TaskListActivity,
-                            state.message,
+                            context,
+                            (syncState as SyncState.Error).message,
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 }
             }
         }
-
-        /* ===================== LOAD DATA ===================== */
-
-        // Load các công việc từ Firebase Realtime DB
-        taskViewModel.loadFromRealtimeDatabase()
     }
 }

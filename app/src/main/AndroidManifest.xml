@@ -27,6 +27,14 @@
             </intent-filter>
         </activity>
 
+
+        <!-- tast screen -->
+        <activity
+            android:name=".ui.TaskListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.SmartStudyPlanner" />
+
+
         <!-- Stats screen -->
         <activity
             android:name=".ui.StatsActivity"
