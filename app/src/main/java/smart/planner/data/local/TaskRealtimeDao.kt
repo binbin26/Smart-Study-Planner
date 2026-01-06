@@ -10,13 +10,15 @@ class TaskRealtimeDao {
 
     fun saveTask(firebaseId: String, task: Task, callback: (Boolean) -> Unit = {}) {
         val key = if (firebaseId.isEmpty()) db.push().key ?: return else firebaseId
+        // Đã cập nhật để sử dụng đúng các trường mới của Task
         val taskMap = mapOf(
             "title" to task.title,
             "description" to task.description,
             "deadline" to task.deadline,
-            "subjectName" to task.subjectName,
-            "isDone" to task.isDone,
-            "createdAt" to ServerValue.TIMESTAMP
+            "subjectId" to task.subjectId, // Sửa từ subjectName
+            "status" to task.status,       // Sửa từ isDone
+            "createdAt" to task.createdAt,
+            "updatedAt" to ServerValue.TIMESTAMP
         )
         db.child(key).setValue(taskMap).addOnCompleteListener { callback(it.isSuccessful) }
     }
@@ -25,14 +27,16 @@ class TaskRealtimeDao {
         db.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = snapshot.children.mapNotNull { child ->
+                    // Đã cập nhật để khớp với hàm khởi tạo mới của Task
                     Task(
                         firebaseId = child.key ?: "",
                         title = child.child("title").value?.toString() ?: "",
                         description = child.child("description").value?.toString() ?: "",
                         deadline = (child.child("deadline").value as? Long) ?: 0L,
-                        subjectName = child.child("subjectName").value?.toString() ?: "",
-                        isDone = (child.child("isDone").value as? Boolean) ?: false,
-                        createdAt = (child.child("createdAt").value as? Long) ?: 0L
+                        subjectId = child.child("subjectId").value?.toString() ?: "", // Sửa từ subjectName
+                        status = child.child("status").value?.toString() ?: "TODO",   // Sửa từ isDone
+                        createdAt = (child.child("createdAt").value as? Long) ?: 0L,
+                        updatedAt = (child.child("updatedAt").value as? Long) ?: 0L    // Thêm updatedAt
                     )
                 }
                 onSuccess(list)

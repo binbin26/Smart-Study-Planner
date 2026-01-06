@@ -29,22 +29,17 @@ class TaskListActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         // Khởi tạo adapter với logic xóa
-        adapter = TaskAdapter(
-            onDeleteClick = { task ->
-                viewModel.deleteTask(task) // Gọi hàm xóa trong ViewModel
-            }
-        )
+        adapter = TaskAdapter { task ->
+            viewModel.deleteTask(task) // Gọi hàm xóa trong ViewModel
+        }
         recyclerView.adapter = adapter
 
         // 3. Khởi tạo ViewModel
         viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
         // 4. Quan sát dữ liệu
-        viewModel.taskList.observe(this) { tasks ->
+        viewModel.allTasks.observe(this) { tasks ->
             adapter.submitList(tasks)
         }
-
-        // Tải dữ liệu từ Firebase/Local
-        viewModel.fetchTasks()
     }
 }

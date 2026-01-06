@@ -44,13 +44,16 @@ class TaskAdapter(
 
         fun bind(task: Task, onDeleteClick: (Task) -> Unit) {
             tvTitle.text = task.title
-            tvSubject.text = task.subjectName
+            // Đã sửa: Sử dụng subjectId thay vì subjectName
+            tvSubject.text = task.subjectId
 
             val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             tvDeadline.text = "Deadline: ${sdf.format(Date(task.deadline))}"
 
-            tvStatus.text = if (task.isDone) "Hoàn thành" else "Chưa xong"
-            checkBox.isChecked = task.isDone
+            // Đã sửa: Sử dụng status thay vì isDone
+            val isTaskDone = task.status == "DONE"
+            tvStatus.text = if (isTaskDone) "Hoàn thành" else "Chưa xong"
+            checkBox.isChecked = isTaskDone
 
             // Xử lý sự kiện bấm nút xóa
             btnDelete.setOnClickListener {

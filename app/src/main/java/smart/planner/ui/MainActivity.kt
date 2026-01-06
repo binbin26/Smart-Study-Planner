@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -48,14 +47,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(viewModel: TaskViewModel = viewModel()) {
     val context = LocalContext.current
-
-    // Sử dụng 'taskList' thay vì 'allTasks' để khớp với TaskViewModel của Quyên
-    val tasks by viewModel.taskList.observeAsState(initial = emptyList())
-
-    // Tự động fetch dữ liệu khi màn hình mở ra
-    LaunchedEffect(Unit) {
-        viewModel.fetchTasks()
-    }
+    val tasks by viewModel.allTasks.observeAsState(initial = emptyList())
 
     Column(
         modifier = Modifier
@@ -93,7 +85,7 @@ fun MainScreen(viewModel: TaskViewModel = viewModel()) {
                 items(tasks) { task ->
                     TaskCard(
                         task = task,
-                        onDelete = { /* Logic xóa nếu cần */ }
+                        onDelete = { viewModel.deleteTask(task) }
                     )
                 }
             }
@@ -115,15 +107,13 @@ fun TaskCard(task: Task, onDelete: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                // Sửa 'task.name' thành 'task.title' và 'task.subject' thành 'task.subjectName'
-                // để khớp với Model Task mới gộp
                 Text(
                     text = task.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Môn: ${task.subjectName}",
+                    text = "Môn: ${task.subjectId}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )

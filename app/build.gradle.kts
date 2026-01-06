@@ -57,11 +57,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     // --- BỔ SUNG QUAN TRỌNG CHO COMPOSE & VIEWMODEL ---
-    // Hỗ trợ hàm viewModel() trong @Composable
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    // Hỗ trợ observeAsState() để dùng LiveData trong Compose
     implementation("androidx.compose.runtime:runtime-livedata:1.7.6")
-    // Hỗ trợ các thuộc tính delegated (by tasks)
     implementation("androidx.compose.runtime:runtime:1.7.6")
 
     // Room Database
@@ -71,9 +68,12 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-database")
+    // Sử dụng BoM để quản lý phiên bản các thư viện Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    // Chỉ cần khai báo firebase-database-ktx, nó đã bao gồm cả firebase-database
+    implementation("com.google.firebase:firebase-database-ktx")
+
 
     // Retrofit & Network
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

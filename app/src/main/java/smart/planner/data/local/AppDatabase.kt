@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import smart.planner.data.model.Task
 
-@Database(entities = [Task::class], version = 2, exportSchema = false) // Tăng version lên 2
+@Database(entities = [Task::class], version = 3, exportSchema = false) // Tăng version lên 3
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
 
