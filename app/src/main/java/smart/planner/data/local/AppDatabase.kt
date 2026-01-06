@@ -10,7 +10,7 @@ import smart.planner.data.model.User
 
 @Database(
     entities = [User::class, Subject::class, Task::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,10 +28,11 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "smart_planner_db"
+                    "smart_planner_database"
                 )
-                    .fallbackToDestructiveMigration() // Chỉ dùng trong development
+                    .fallbackToDestructiveMigration()
                     .build()
+
                 INSTANCE = instance
                 instance
             }

@@ -2,11 +2,7 @@ package smart.planner.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.DatePicker
-import android.widget.Spinner
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -24,7 +20,7 @@ class AddTaskActivity : AppCompatActivity() {
     private lateinit var taskViewModel: TaskViewModel
     private lateinit var subjectViewModel: SubjectViewModel
     private lateinit var userViewModel: UserViewModel
-    
+
     private var userId: Int? = null
     private var subjects: List<Subject> = emptyList()
 
@@ -33,12 +29,11 @@ class AddTaskActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add_task)
 
         // 1. Khởi tạo ViewModels
-        val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        taskViewModel = ViewModelProvider(this, viewModelFactory)[TaskViewModel::class.java]
-        subjectViewModel = ViewModelProvider(this, viewModelFactory)[SubjectViewModel::class.java]
-        userViewModel = ViewModelProvider(this, viewModelFactory)[UserViewModel::class.java]
+        val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
+        subjectViewModel = ViewModelProvider(this, factory)[SubjectViewModel::class.java]
+        userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
 
-        // 2. Ánh xạ View từ layout XML
         val etTaskName = findViewById<TextInputEditText>(R.id.etTaskName)
         val etDescription = findViewById<TextInputEditText>(R.id.etDescription)
         val spinnerSubject = findViewById<Spinner>(R.id.spinnerSubject)
@@ -47,37 +42,42 @@ class AddTaskActivity : AppCompatActivity() {
         val btnCancel = findViewById<Button>(R.id.btnCancel)
         val btnReviewTasks = findViewById<Button>(R.id.btnReviewTasks)
 
-        // 3. Load userId và subjects từ database
+        // 2. Load userId và danh sách môn học
         lifecycleScope.launch {
             userId = userViewModel.getCurrentUserIdAsync()
+
             if (userId == null) {
                 Toast.makeText(this@AddTaskActivity, "Vui lòng đăng nhập trước", Toast.LENGTH_LONG).show()
                 finish()
                 return@launch
             }
 
-            subjectViewModel.getSubjectsByUserId(userId!!).observe(this@AddTaskActivity) { loadedSubjects ->
-                subjects = loadedSubjects
-                if (subjects.isEmpty()) {
-                    Toast.makeText(this@AddTaskActivity, "Chưa có môn học nào. Vui lòng thêm môn học trước.", Toast.LENGTH_LONG).show()
-                    spinnerSubject.adapter = ArrayAdapter(this@AddTaskActivity, android.R.layout.simple_spinner_dropdown_item, listOf("No Subjects"))
-                } else {
-                    val subjectNames = subjects.map { it.name }
-                    val adapter = ArrayAdapter(this@AddTaskActivity, android.R.layout.simple_spinner_dropdown_item, subjectNames)
-                    spinnerSubject.adapter = adapter
+            subjectViewModel
+                .getSubjectsByUserId(userId!!)
+                .observe(this@AddTaskActivity) { loadedSubjects ->
+                    subjects = loadedSubjects
+
+                    if (subjects.isEmpty()) {
+                        spinnerSubject.adapter = ArrayAdapter(
+                            this@AddTaskActivity,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            listOf("Chưa có môn học")
+                        )
+                    } else {
+                        val subjectNames = subjects.map { it.name }
+                        spinnerSubject.adapter = ArrayAdapter(
+                            this@AddTaskActivity,
+                            android.R.layout.simple_spinner_dropdown_item,
+                            subjectNames
+                        )
+                    }
                 }
-            }
         }
 
-        // 4. Xử lý nút Lưu Task
         btnSave.setOnClickListener {
             val name = etTaskName.text.toString().trim()
             val desc = etDescription.text.toString().trim()
             val subjectIndex = spinnerSubject.selectedItemPosition
-
-            val calendar = Calendar.getInstance()
-            calendar.set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
-            val deadline = calendar.timeInMillis
 
             // Validation
             if (name.isEmpty()) {
@@ -91,32 +91,37 @@ class AddTaskActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if (subjects.isEmpty() || subjectIndex < 0 || subjectIndex >= subjects.size) {
+            if (subjects.isEmpty() || subjectIndex !in subjects.indices) {
                 Toast.makeText(this, "Vui lòng chọn môn học", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val selectedSubject = subjects[subjectIndex]
-            val subjectName = selectedSubject.name
+            val calendar = Calendar.getInstance().apply {
+                set(datePicker.year, datePicker.month, datePicker.dayOfMonth)
+            }
+            val deadline = calendar.timeInMillis
 
-            taskViewModel.addTask(name, subjectName, deadline, desc)
+            val selectedSubject = subjects[subjectIndex]
+
+            taskViewModel.addTask(
+                name = name,
+                subjectName = selectedSubject.name,
+                deadline = deadline,
+                description = desc
+            )
+
             Toast.makeText(this, "Đã thêm task thành công!", Toast.LENGTH_SHORT).show()
 
-            // Reset các trường nhập liệu
+            // Reset form
             etTaskName.text?.clear()
             etDescription.text?.clear()
             etTaskName.requestFocus()
         }
 
-        // 5. Xử lý nút Hủy
-        btnCancel.setOnClickListener {
-            finish()
-        }
+        btnCancel.setOnClickListener { finish() }
 
-        // 6. Xử lý nút Xem lại Task (Chuyển sang màn hình CheckTaskActivity)
         btnReviewTasks.setOnClickListener {
-            val intent = Intent(this, CheckTaskActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, TaskListActivity::class.java))
         }
     }
 }
