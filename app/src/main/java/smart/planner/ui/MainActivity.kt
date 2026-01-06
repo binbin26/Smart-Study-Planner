@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import smart.planner.data.model.Task
+import smart.planner.data.test.CoroutinesIOTest
 import smart.planner.ui.AddTaskActivity
 import smart.planner.ui.viewmodel.TaskViewModel
 
@@ -36,6 +37,11 @@ fun SmartStudyPlannerTheme(content: @Composable () -> Unit) {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Test API calls (có thể comment lại sau khi test xong)
+        //smart.planner.data.api.ApiTestExample.testAllApis()
+        CoroutinesIOTest.testDispatchersIO()
+        
         setContent {
             SmartStudyPlannerTheme {
                 MainScreen()
@@ -117,6 +123,13 @@ fun TaskCard(task: Task, onDelete: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )
+                if (task.deadline > 0) {
+                    Text(
+                        text = "Deadline: ${java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date(task.deadline))}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.DarkGray
+                    )
+                }
             }
 
             IconButton(onClick = onDelete) {

@@ -1,24 +1,18 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()  // ← ĐƠN GIẢN HÓA!
         mavenCentral()
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
+        google()  // ← GIỐNG NHAU!
         mavenCentral()
     }
 }
 
 rootProject.name = "SmartStudy Planner"
 include(":app")
- 

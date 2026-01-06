@@ -4,10 +4,19 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import smart.planner.data.model.Subject
 import smart.planner.data.model.Task
+import smart.planner.data.model.User
 
-@Database(entities = [Task::class], version = 3, exportSchema = false) // Tăng version lên 3
+@Database(
+    entities = [User::class, Subject::class, Task::class],
+    version = 3,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
+
+    abstract fun userDao(): UserDao
+    abstract fun subjectDao(): SubjectDao
     abstract fun taskDao(): TaskDao
 
     companion object {
@@ -21,8 +30,9 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "smart_planner_database"
                 )
-                    .fallbackToDestructiveMigration() // Tự xóa data cũ để tạo schema mới không gây crash
+                    .fallbackToDestructiveMigration()
                     .build()
+
                 INSTANCE = instance
                 instance
             }

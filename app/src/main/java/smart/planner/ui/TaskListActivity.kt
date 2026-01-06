@@ -7,38 +7,36 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import smart.planner.R
+import smart.planner.ui.adapter.TaskAdapter
 import smart.planner.ui.viewmodel.TaskViewModel
 
 class TaskListActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: TaskViewModel
+    private lateinit var taskViewModel: TaskViewModel
     private lateinit var adapter: TaskAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_task_list)
 
-        // 1. Ánh xạ nút Quay lại trong headerBar
+        // 1. Nút quay lại
         val btnBack = findViewById<ImageButton>(R.id.btnBack)
-        btnBack.setOnClickListener {
-            finish() // Quay lại màn hình AddTaskActivity
-        }
+        btnBack.setOnClickListener { finish() }
 
-        // 2. Thiết lập RecyclerView và Adapter
+        // 2. RecyclerView
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        // Khởi tạo adapter với logic xóa
         adapter = TaskAdapter { task ->
-            viewModel.deleteTask(task) // Gọi hàm xóa trong ViewModel
+            taskViewModel.deleteTask(task)
         }
         recyclerView.adapter = adapter
 
-        // 3. Khởi tạo ViewModel
-        viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
+        // 3. ViewModel
+        taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
-        // 4. Quan sát dữ liệu
-        viewModel.allTasks.observe(this) { tasks ->
+        // 4. Observe data
+        taskViewModel.allTasks.observe(this) { tasks ->
             adapter.submitList(tasks)
         }
     }

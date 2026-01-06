@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="6dp">
@@ -12,56 +13,54 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <!-- CONTENT -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/btnDeleteTask"
+            android:layout_toStartOf="@id/btnDeleteTask"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvTaskTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Task Title"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"/>
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/tvTaskSubject"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Subject"
                 android:textSize="14sp"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="4dp" />
 
             <TextView
                 android:id="@+id/tvDeadline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Deadline"
                 android:textSize="14sp"
                 android:textColor="@android:color/holo_red_dark"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="4dp" />
 
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Status"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/holo_blue_dark"
-                android:layout_marginTop="6dp"/>
+                android:layout_marginTop="6dp" />
 
             <CheckBox
-                android:id="@+id/checkbox"
+                android:id="@+id/checkboxCompleted"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mark as completed"
-                android:layout_marginTop="6dp"/>
+                android:text="Hoàn thành"
+                android:layout_marginTop="6dp" />
         </LinearLayout>
 
+        <!-- DELETE BUTTON -->
         <ImageButton
             android:id="@+id/btnDeleteTask"
             android:layout_width="40dp"
