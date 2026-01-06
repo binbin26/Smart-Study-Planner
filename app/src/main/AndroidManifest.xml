@@ -40,7 +40,7 @@
 
         <!-- Check Task Activity -->
         <activity
-            android:name="smart.planner.ui.CheckTaskActivity"
+            android:name="smart.planner.ui.TaskListActivity"
             android:exported="false"
             android:label="Kiểm tra Task"
             android:theme="@style/Theme.SmartStudyPlanner"
