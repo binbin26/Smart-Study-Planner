@@ -2,11 +2,7 @@ package smart.planner.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.DatePicker
-import android.widget.Spinner
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputEditText
@@ -22,27 +18,21 @@ class AddTaskActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_task)
 
-        // 1. Khởi tạo ViewModel cho AndroidViewModel
-        viewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        )[TaskViewModel::class.java]
+        viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
-        // 2. Ánh xạ View từ layout XML
         val etTaskName = findViewById<TextInputEditText>(R.id.etTaskName)
         val etDescription = findViewById<TextInputEditText>(R.id.etDescription)
         val spinnerSubject = findViewById<Spinner>(R.id.spinnerSubject)
         val datePicker = findViewById<DatePicker>(R.id.datePicker)
         val btnSave = findViewById<Button>(R.id.btnSaveTask)
         val btnCancel = findViewById<Button>(R.id.btnCancel)
-        val btnReviewTasks = findViewById<Button>(R.id.btnReviewTasks) // Nút mới bổ sung
+        val btnReviewTasks = findViewById<Button>(R.id.btnReviewTasks)
 
-        // 3. Setup Spinner với danh sách môn học
-        val subjects = arrayOf("Toán", "Văn", "Anh", "Lập trình", "Kỹ thuật phần mềm")
+        // Cập nhật danh sách môn học mới
+        val subjects = arrayOf("AI", "LT Mobile", "UIUX", "PM", "Lập trình cơ bản")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, subjects)
         spinnerSubject.adapter = adapter
 
-        // 4. Xử lý nút Lưu Task
         btnSave.setOnClickListener {
             val name = etTaskName.text.toString().trim()
             val desc = etDescription.text.toString().trim()
@@ -53,28 +43,25 @@ class AddTaskActivity : AppCompatActivity() {
             val deadline = calendar.timeInMillis
 
             if (name.isNotEmpty()) {
+                // Gọi hàm addTask đã gộp từ branch Phát vào cấu trúc Quyên
                 viewModel.addTask(name, subject, deadline, desc)
                 Toast.makeText(this, "Đã thêm task thành công!", Toast.LENGTH_SHORT).show()
 
-                // SỬA TẠI ĐÂY: Thay vì finish(), ta reset các trường nhập liệu
+                // Xóa dữ liệu cũ để tiếp tục thêm task mới (không gọi finish())
                 etTaskName.text?.clear()
                 etDescription.text?.clear()
-                etTaskName.requestFocus() // Đưa con trỏ về ô nhập tên bài tập
-
+                etTaskName.requestFocus()
             } else {
                 etTaskName.error = "Tên bài tập không được để trống"
-                Toast.makeText(this, "Vui lòng nhập tên bài tập", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // 5. Xử lý nút Hủy
-        btnCancel.setOnClickListener {
-            finish()
-        }
+        btnCancel.setOnClickListener { finish() }
 
-        // 6. Xử lý nút Xem lại Task (Chuyển sang màn hình CheckTaskActivity)
+        // Sửa lỗi nút "Xem lại Task" không hoạt động
         btnReviewTasks.setOnClickListener {
-            val intent = Intent(this, CheckTaskActivity::class.java)
+            // Chuyển hướng chính xác sang TaskListActivity (sử dụng layout của Phát)
+            val intent = Intent(this, TaskListActivity::class.java)
             startActivity(intent)
         }
     }

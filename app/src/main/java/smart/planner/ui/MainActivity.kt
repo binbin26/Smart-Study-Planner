@@ -7,13 +7,14 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items // Cần thiết để sử dụng items(list)
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState // Cần thư viện runtime-livedata
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,8 +48,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(viewModel: TaskViewModel = viewModel()) {
     val context = LocalContext.current
-    // Quan sát LiveData và chuyển thành State để Compose tự render lại khi Room thay đổi
-    val tasks by viewModel.allTasks.observeAsState(initial = emptyList())
+
+    // Sử dụng 'taskList' thay vì 'allTasks' để khớp với TaskViewModel của Quyên
+    val tasks by viewModel.taskList.observeAsState(initial = emptyList())
+
+    // Tự động fetch dữ liệu khi màn hình mở ra
+    LaunchedEffect(Unit) {
+        viewModel.fetchTasks()
+    }
 
     Column(
         modifier = Modifier
@@ -79,7 +86,6 @@ fun MainScreen(viewModel: TaskViewModel = viewModel()) {
                 Text(text = "Chưa có task nào", color = Color.Gray)
             }
         } else {
-            // SỬA ĐỔI TẠI ĐÂY: Sử dụng items(tasks) thay vì items(count = ...)
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -87,7 +93,7 @@ fun MainScreen(viewModel: TaskViewModel = viewModel()) {
                 items(tasks) { task ->
                     TaskCard(
                         task = task,
-                        onDelete = { viewModel.deleteTask(task) }
+                        onDelete = { /* Logic xóa nếu cần */ }
                     )
                 }
             }
@@ -109,13 +115,15 @@ fun TaskCard(task: Task, onDelete: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                // Sửa 'task.name' thành 'task.title' và 'task.subject' thành 'task.subjectName'
+                // để khớp với Model Task mới gộp
                 Text(
-                    text = task.name,
+                    text = task.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Môn: ${task.subject}",
+                    text = "Môn: ${task.subjectName}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )
