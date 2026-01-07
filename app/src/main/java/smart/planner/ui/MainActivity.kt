@@ -64,7 +64,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(viewModel: TaskViewModel = viewModel()) {
     val context = LocalContext.current
-    // Quan sát LiveData và chuyển thành State để Compose tự render lại khi Room thay đổi
     val tasks by viewModel.allTasks.observeAsState(initial = emptyList())
 
     Column(
@@ -126,12 +125,12 @@ fun TaskCard(task: Task, onDelete: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = task.name,
+                    text = task.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Môn: ${task.subject}",
+                    text = "Môn: ${task.subjectId}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.DarkGray
                 )

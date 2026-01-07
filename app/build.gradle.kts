@@ -16,7 +16,6 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -44,7 +43,6 @@ android {
         viewBinding = true
     }
 
-    // ✅ thêm cái này để tránh lỗi packaging khi kéo lib (hay gặp)
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -53,6 +51,7 @@ android {
 }
 
 dependencies {
+
     /* ===================== ANDROID CORE ===================== */
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -71,13 +70,10 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // --- BỔ SUNG QUAN TRỌNG CHO COMPOSE & VIEWMODEL ---
-    // Hỗ trợ hàm viewModel() trong @Composable
+    /* ===================== LIFECYCLE & VIEWMODEL ===================== */
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    // Hỗ trợ observeAsState() để dùng LiveData trong Compose
     implementation("androidx.compose.runtime:runtime-livedata:1.7.6")
-    // Hỗ trợ các thuộc tính delegated (by tasks)
-    implementation("androidx.compose.runtime:runtime:1.7.6")
 
     /* ===================== UI VIEW ===================== */
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -90,16 +86,11 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
 
-    /* ===================== LIFECYCLE & VIEWMODEL ===================== */
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-
     /* ===================== FIREBASE (BOM) ===================== */
-    // Sử dụng BOM để quản lý version tự động - version ổn định
-    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-firestore-ktx") // Version được quản lý bởi BOM
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("com.google.firebase:firebase-database-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
 
     /* ===================== RETROFIT & NETWORK ===================== */
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -113,10 +104,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
-    /* ===================== MATERIAL DESIGN ===================== */
-    implementation("com.google.android.material:material:1.9.0")
-
-    /* ===================== CALENDAR VIEW ===================== */
+    /* ===================== CALENDAR ===================== */
     implementation("com.prolificinteractive:material-calendarview:1.4.3")
 
     /* ===================== TESTING ===================== */
