@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "830614411930",
-    "firebase_url": "https://smart-sturdy-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "smart-sturdy",
-    "storage_bucket": "smart-sturdy.firebasestorage.app"
+    "project_number": "690750773558",
+    "firebase_url": "https://ltmobile-c9240-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "ltmobile-c9240",
+    "storage_bucket": "ltmobile-c9240.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:830614411930:android:43f7a8ae6f80415b369d23",
+        "mobilesdk_app_id": "1:690750773558:android:7a4fa18bcae3531b82fb97",
         "android_client_info": {
           "package_name": "smart.planner"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAb1_o70PMplYoATFgWY8vZo626qbsxMIY"
+          "current_key": "AIzaSyAPkxYwREwyN1cJ1K6BTAduoPzgBmpkXdw"
         }
       ],
       "services": {

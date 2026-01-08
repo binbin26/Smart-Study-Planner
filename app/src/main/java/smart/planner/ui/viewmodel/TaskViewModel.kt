@@ -1,6 +1,7 @@
 package smart.planner.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
@@ -33,6 +34,9 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
         TaskFirebaseService.addNewTask(firebaseTask) { firebaseKey ->
             if (firebaseKey != null) {
+                // ✅ ADD THIS LOG
+                Log.d("FIREBASE_TEST", "🔥 Task Saved Successfully to Firebase! ID: $firebaseKey")
+
                 val localTask = Task(
                     firebaseId = firebaseKey,
                     title = title,
@@ -47,6 +51,8 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
                 viewModelScope.launch {
                     repository.insert(localTask)
                 }
+            } else {
+                 Log.e("FIREBASE_TEST", "❌ Failed to save task to Firebase")
             }
         }
     }

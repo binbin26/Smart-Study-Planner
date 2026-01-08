@@ -110,6 +110,26 @@
             android:paddingEnd="16dp"
             android:layout_marginBottom="24dp"/>
 
+        <!-- SECTION: DEVELOPER -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔧 Developer"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"/>
+
+        <Button
+            android:id="@+id/btnInsertSampleData"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📊 Thêm dữ liệu mẫu"
+            android:textAlignment="textStart"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="24dp"/>
+
         <!-- SECTION: VỀ ỨNG DỤNG -->
         <TextView
             android:layout_width="wrap_content"

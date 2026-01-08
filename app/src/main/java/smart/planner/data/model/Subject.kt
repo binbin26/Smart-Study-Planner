@@ -21,7 +21,7 @@ data class Subject(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val code: String? = null,
-    val description: String? = null,
+    val teacher: String? = null, // Giảng viên
     val color: String? = null, // Hex color code
     val userId: Int, // Foreign key to User
     val createdAt: Long = System.currentTimeMillis(),

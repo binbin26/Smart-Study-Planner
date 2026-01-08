@@ -107,6 +107,11 @@ dependencies {
     /* ===================== CALENDAR ===================== */
     implementation("com.prolificinteractive:material-calendarview:1.4.3")
 
+    /* ===================== CHARTS (VICO) ===================== */
+    implementation("com.patrykandpatrick.vico:compose:2.0.0-alpha.28")
+    implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-alpha.28")
+    implementation("com.patrykandpatrick.vico:core:2.0.0-alpha.28")
+
     /* ===================== TESTING ===================== */
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -9,8 +9,11 @@ import smart.planner.data.firebase.TaskFirebaseModel
 
 class TaskRealtimeDao {
 
-    private val db: DatabaseReference =
-        FirebaseDatabase.getInstance().getReference("tasks")
+    // ✅ SỬA: Trỏ trực tiếp vào URL trong ảnh của bạn (Singapore Region)
+    // Nếu để getInstance() trống, nó có thể trỏ sai vào server Mỹ
+    private val db: DatabaseReference = FirebaseDatabase
+        .getInstance("https://ltmobile-c9240-default-rtdb.asia-southeast1.firebasedatabase.app")
+        .getReference("tasks")
 
     fun getAllTasks(
         onSuccess: (List<Pair<String, TaskFirebaseModel>>) -> Unit,
@@ -43,7 +46,8 @@ class TaskRealtimeDao {
     }
 
     fun updateTaskDone(firebaseId: String, isDone: Boolean) {
-        db.child(firebaseId).child("isDone").setValue(isDone)
+        // Cập nhật trường isDone (hoặc status nếu model đã đổi)
+        db.child(firebaseId).child("status").setValue(if (isDone) "DONE" else "TODO")
     }
 
     fun deleteTask(firebaseId: String) {

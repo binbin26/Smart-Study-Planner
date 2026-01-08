@@ -12,7 +12,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import smart.planner.R
+import smart.planner.data.local.AppDatabase
 import smart.planner.ui.viewmodel.UserViewModel
+import smart.planner.util.SampleDataHelper
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -65,6 +67,11 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show()
         }
 
+        // Nút "Thêm dữ liệu mẫu" (DEV ONLY)
+        findViewById<Button>(R.id.btnInsertSampleData)?.setOnClickListener {
+            showInsertSampleDataConfirmation()
+        }
+
         // Nút "Giới thiệu"
         findViewById<Button>(R.id.btnAbout).setOnClickListener {
             showAboutDialog()
@@ -76,20 +83,51 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun showInsertSampleDataConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("📊 Thêm dữ liệu mẫu")
+            .setMessage("""
+                Sẽ thêm:
+                • 5 môn học
+                • 25 tasks (phân bố 7 ngày)
+
+                Dùng để test tính năng thống kê.
+
+                Tiếp tục?
+            """.trimIndent())
+            .setPositiveButton("Thêm") { _, _ ->
+                insertSampleData()
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun insertSampleData() {
+        lifecycleScope.launch {
+            try {
+                val database = AppDatabase.getInstance(this@SettingsActivity)
+                val helper = SampleDataHelper(this@SettingsActivity)
+                helper.insertSampleData(database)
+            } catch (e: Exception) {
+                Toast.makeText(this@SettingsActivity, "❌ Lỗi: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     private fun showAboutDialog() {
         AlertDialog.Builder(this)
             .setTitle("📱 Smart Study Planner")
             .setMessage("""
                 Version: 1.0.0
-                
+
                 Ứng dụng quản lý học tập thông minh
-                
+
                 Tính năng:
                 ✅ Quản lý tasks
                 ✅ Lịch học và deadline
                 ✅ Thống kê tiến độ
                 ✅ Nhắc nhở deadline
-                
+
                 Phát triển bởi: Team Smart Planner
                 © 2026
             """.trimIndent())

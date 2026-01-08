@@ -2,35 +2,37 @@ package smart.planner.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.textfield.TextInputEditText
 import smart.planner.R
 import smart.planner.data.model.Subject
+import smart.planner.ui.screen.SubjectListActivity
+import smart.planner.ui.viewmodel.SubjectViewModel
 import smart.planner.ui.viewmodel.TaskViewModel
 import java.util.Calendar
 
 class AddTaskActivity : AppCompatActivity() {
 
     private lateinit var taskViewModel: TaskViewModel
-
-    // Mock subjects (tạm thời cho đến khi có Subject management screen)
-    private val subjects = listOf(
-        Subject(id = 1, name = "Toán", userId = 1, color = "#FF5722"),
-        Subject(id = 2, name = "Văn", userId = 1, color = "#4CAF50"),
-        Subject(id = 3, name = "Lý", userId = 1, color = "#2196F3"),
-        Subject(id = 4, name = "Hóa", userId = 1, color = "#9C27B0"),
-        Subject(id = 5, name = "Anh", userId = 1, color = "#FF9800")
-    )
+    private lateinit var subjectViewModel: SubjectViewModel
+    private var subjects: List<Subject> = emptyList()
+    private var currentUserId: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_task)
 
-        // Khởi tạo ViewModel
+        // Get current user
+        val sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE)
+        currentUserId = sharedPreferences.getInt("userId", 1)
+
+        // Khởi tạo ViewModels
         val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
+        subjectViewModel = ViewModelProvider(this, factory)[SubjectViewModel::class.java]
 
         // Views
         val etTaskName = findViewById<TextInputEditText>(R.id.etTaskName)
@@ -41,14 +43,8 @@ class AddTaskActivity : AppCompatActivity() {
         val btnCancel = findViewById<Button>(R.id.btnCancel)
         val btnReviewTasks = findViewById<Button>(R.id.btnReviewTasks)
 
-        // Setup Spinner với mock subjects
-        val subjectNames = subjects.map { it.name }
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            subjectNames
-        )
-        spinnerSubject.adapter = adapter
+        // Load subjects from database
+        loadSubjects(spinnerSubject)
 
         // Save button
         btnSave.setOnClickListener {
@@ -100,5 +96,40 @@ class AddTaskActivity : AppCompatActivity() {
         btnReviewTasks.setOnClickListener {
             startActivity(Intent(this, TaskListActivity::class.java))
         }
+    }
+
+    private fun loadSubjects(spinnerSubject: Spinner) {
+        subjectViewModel.getSubjectsByUserId(currentUserId).observe(this) { subjectList ->
+            subjects = subjectList
+
+            if (subjects.isEmpty()) {
+                // Show message and button to add subjects
+                Toast.makeText(
+                    this,
+                    "⚠️ Chưa có môn học nào. Hãy thêm môn học trước!",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                // Optionally navigate to SubjectListActivity
+                val intent = Intent(this, SubjectListActivity::class.java)
+                startActivity(intent)
+            } else {
+                // Setup spinner with subjects from database
+                val subjectNames = subjects.map { it.name }
+                val adapter = ArrayAdapter(
+                    this,
+                    android.R.layout.simple_spinner_dropdown_item,
+                    subjectNames
+                )
+                spinnerSubject.adapter = adapter
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh subjects when returning from SubjectListActivity
+        val spinnerSubject = findViewById<Spinner>(R.id.spinnerSubject)
+        loadSubjects(spinnerSubject)
     }
 }

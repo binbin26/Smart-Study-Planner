@@ -83,6 +83,23 @@
             android:label="Chi Tiết Task"
             android:theme="@style/Theme.SmartStudyPlanner" />
 
+        <!-- ==================== SUBJECT MANAGEMENT ==================== -->
+
+        <!-- Subject List Activity -->
+        <activity
+            android:name=".ui.screen.SubjectListActivity"
+            android:exported="false"
+            android:label="Quản lý Môn học"
+            android:theme="@style/Theme.SmartStudyPlanner" />
+
+        <!-- Add/Edit Subject Activity -->
+        <activity
+            android:name=".ui.screen.AddEditSubjectActivity"
+            android:exported="false"
+            android:label="Thêm/Sửa Môn học"
+            android:theme="@style/Theme.SmartStudyPlanner"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- ==================== NOTIFICATIONS ==================== -->
 
         <!-- Task Reminder Receiver -->

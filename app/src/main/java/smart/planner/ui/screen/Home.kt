@@ -27,6 +27,7 @@ import smart.planner.ui.adapter.UpcomingTaskAdapter
 import smart.planner.ui.screen.TaskDetailActivity
 import smart.planner.ui.viewmodel.TaskViewModel
 import smart.planner.ui.viewmodel.UserViewModel
+import smart.planner.ui.viewmodel.SubjectViewModel
 import android.util.Log
 import smart.planner.ui.SettingsActivity
 
@@ -36,6 +37,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var taskAdapter: UpcomingTaskAdapter
     private lateinit var taskViewModel: TaskViewModel
     private lateinit var userViewModel: UserViewModel
+    private lateinit var subjectViewModel: SubjectViewModel
     private var allTasks: List<Task> = emptyList()
 
     // Giữ decorator hiện tại để remove khi cập nhật
@@ -50,6 +52,7 @@ class HomeActivity : AppCompatActivity() {
         val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
         userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
+        subjectViewModel = ViewModelProvider(this, factory)[SubjectViewModel::class.java]
 
         setupToolbar()
         setupRecyclerView()
@@ -176,6 +179,14 @@ class HomeActivity : AppCompatActivity() {
                 binding.tvSubtitle.text = "Chưa có task nào. Nhấn '+' để thêm task mới!"
             }
         }
+
+        // Observe subjects to update subject count
+        val sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE)
+        val currentUserId = sharedPreferences.getInt("userId", 1)
+
+        subjectViewModel.getSubjectsByUserId(currentUserId).observe(this) { subjects ->
+            binding.tvSubjectCount?.text = "📚 ${subjects.size}\nMôn học"
+        }
     }
 
     private fun setupCalendar() {
@@ -240,9 +251,6 @@ class HomeActivity : AppCompatActivity() {
 
         // ✅ Cập nhật số urgent tasks
         binding.tvUrgentCount?.text = "⏰ $urgentCount\nSắp đến hạn"
-
-        // ✅ Cập nhật số môn học (tạm hardcode, sau sẽ load từ DB)
-        binding.tvSubjectCount?.text = "📚 5\nMôn học"
     }
 
     private fun setupBottomNavigation() {
@@ -259,6 +267,12 @@ class HomeActivity : AppCompatActivity() {
                     // Navigate to Add Task
                     startActivity(Intent(this, AddTaskActivity::class.java))
                     // Don't finish() - let user come back
+                    true
+                }
+
+                R.id.nav_subjects -> {
+                    // Navigate to Subject Management
+                    startActivity(Intent(this, smart.planner.ui.screen.SubjectListActivity::class.java))
                     true
                 }
 

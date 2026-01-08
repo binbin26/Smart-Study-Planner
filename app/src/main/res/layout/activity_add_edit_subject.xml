@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thêm Môn học"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Subject Name -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSubjectName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="Tên môn học *"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSubjectName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Subject Code -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSubjectCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Mã môn học"
+            app:layout_constraintTop_toBottomOf="@id/tilSubjectName">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSubjectCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Teacher -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTeacher"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Giảng viên"
+            app:layout_constraintTop_toBottomOf="@id/tilSubjectCode">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTeacher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Color Picker -->
+        <TextView
+            android:id="@+id/tvColorLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Chọn màu:"
+            android:textSize="16sp"
+            android:textColor="#212121"
+            app:layout_constraintTop_toBottomOf="@id/tilTeacher"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/colorPicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/tvColorLabel">
+
+            <View
+                android:id="@+id/color1"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/color_circle"
+                android:backgroundTint="#F44336"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <View
+                android:id="@+id/color2"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/color_circle"
+                android:backgroundTint="#2196F3"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <View
+                android:id="@+id/color3"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/color_circle"
+                android:backgroundTint="#4CAF50"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <View
+                android:id="@+id/color4"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/color_circle"
+                android:backgroundTint="#FF9800"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <View
+                android:id="@+id/color5"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/color_circle"
+                android:backgroundTint="#9C27B0"
+                android:clickable="true"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Buttons -->
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="8dp"
+            android:text="Lưu"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#4CAF50"
+            app:layout_constraintTop_toBottomOf="@id/colorPicker"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnCancel" />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Hủy"
+            android:backgroundTint="#9E9E9E"
+            android:textColor="@android:color/white"
+            app:layout_constraintTop_toTopOf="@id/btnSave"
+            app:layout_constraintStart_toEndOf="@id/btnSave"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
