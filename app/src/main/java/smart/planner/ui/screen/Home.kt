@@ -5,11 +5,12 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.prolificinteractive.materialcalendarview.CalendarDay
@@ -19,13 +20,22 @@ import kotlinx.coroutines.launch
 import smart.planner.R
 import smart.planner.data.model.Task
 import smart.planner.databinding.ActivityHomeBinding
+import smart.planner.ui.AddTaskActivity
+import smart.planner.ui.LoginActivity
+import smart.planner.ui.StatsActivity
 import smart.planner.ui.adapter.UpcomingTaskAdapter
 import smart.planner.ui.screen.TaskDetailActivity
+import smart.planner.ui.viewmodel.TaskViewModel
+import smart.planner.ui.viewmodel.UserViewModel
+import android.util.Log
+import smart.planner.ui.SettingsActivity
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var taskAdapter: UpcomingTaskAdapter
+    private lateinit var taskViewModel: TaskViewModel
+    private lateinit var userViewModel: UserViewModel
     private var allTasks: List<Task> = emptyList()
 
     // Giữ decorator hiện tại để remove khi cập nhật
@@ -36,18 +46,25 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Initialize ViewModel
+        val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        taskViewModel = ViewModelProvider(this, factory)[TaskViewModel::class.java]
+        userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
+
         setupToolbar()
         setupRecyclerView()
         observeData()
         setupCalendar()
+        setupFilters()
         setupBottomNavigation()
         createNotificationChannel()
+        loadUserInfo()
     }
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
-            "task_reminder", // Channel ID
-            "Task Reminder", // Channel Name
+            "task_reminder",
+            "Task Reminder",
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Reminders for upcoming tasks"
@@ -60,6 +77,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbarHome)
+        supportActionBar?.title = "Smart Study Planner"
     }
 
     private fun setupRecyclerView() {
@@ -74,68 +92,89 @@ class HomeActivity : AppCompatActivity() {
                 startActivity(intent)
             },
             onCheckboxClick = { task, isChecked ->
-                Toast.makeText(
-                    this,
-                    if (isChecked) "Đã hoàn thành: ${task.title}" else "Chưa hoàn thành: ${task.title}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                updateDashboard(taskAdapter.currentList)
-                applyDeadlineDecorators(calculateDeadlineDays(allTasks))
+                lifecycleScope.launch {
+                    val newStatus = if (isChecked) "DONE" else "TODO"
+                    val updatedTask = task.copy(
+                        status = newStatus,
+                        updatedAt = System.currentTimeMillis()
+                    )
+
+                    taskViewModel.updateTask(updatedTask)
+
+                    Toast.makeText(
+                        this@HomeActivity,
+                        if (isChecked) "✅ Đã hoàn thành: ${task.title}"
+                        else "⏳ Chưa hoàn thành: ${task.title}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    updateDashboard(taskAdapter.currentList)
+                    applyDeadlineDecorators(calculateDeadlineDays(allTasks))
+                }
+            },
+            // ✅ THÊM CALLBACK DELETE
+            onDeleteClick = { task ->
+                lifecycleScope.launch {
+                    taskViewModel.deleteTask(task)
+                    Toast.makeText(
+                        this@HomeActivity,
+                        "🗑️ Đã xóa: ${task.title}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         )
 
         binding.rvUpcomingTasks.apply {
             layoutManager = LinearLayoutManager(this@HomeActivity)
             adapter = taskAdapter
+            setPadding(0, 0, 0, 200)
+            clipToPadding = false
         }
     }
+    private fun setupFilters() {
+        // Chip "Tất cả"
+        binding.chipAll.setOnClickListener {
+            taskAdapter.submitList(allTasks)
+            updateDashboard(allTasks)
+        }
 
+        // Chip "Chưa hoàn thành" (TODO)
+        binding.chipTodo.setOnClickListener {
+            val filtered = allTasks.filter { it.status == "TODO" }
+            taskAdapter.submitList(filtered)
+            updateDashboard(filtered)
+        }
+
+        // Chip "Đang thực hiện" (IN_PROGRESS)
+        binding.chipInProgress.setOnClickListener {
+            val filtered = allTasks.filter { it.status == "IN_PROGRESS" }
+            taskAdapter.submitList(filtered)
+            updateDashboard(filtered)
+        }
+
+        // Chip "Đã hoàn thành" (DONE)
+        binding.chipDone.setOnClickListener {
+            val filtered = allTasks.filter { it.status == "DONE" }
+            taskAdapter.submitList(filtered)
+            updateDashboard(filtered)
+        }
+    }
     private fun observeData() {
-        lifecycleScope.launch {
-            val currentTime = System.currentTimeMillis()
-
-            val mockTasks = listOf(
-                Task(
-                    id = 1,
-                    firebaseId = "",
-                    title = "Bài tập Android",
-                    description = "Hoàn thành bài tập chương 3",
-                    createdAt = currentTime,
-                    deadline = currentTime + 86400000, // +1 ngày
-                    status = "TODO",
-                    subjectId = "LAP_TRINH",
-                    updatedAt = currentTime
-                ),
-                Task(
-                    id = 2,
-                    firebaseId = "",
-                    title = "Đọc SGK Văn",
-                    description = "Đọc bài thơ Đất Nước",
-                    createdAt = currentTime,
-                    deadline = currentTime + 172800000, // +2 ngày
-                    status = "TODO",
-                    subjectId = "VAN_HOC",
-                    updatedAt = currentTime
-                ),
-                Task(
-                    id = 3,
-                    firebaseId = "",
-                    title = "Lab Vật Lý",
-                    description = "Chuẩn bị báo cáo thí nghiệm",
-                    createdAt = currentTime,
-                    deadline = currentTime + 259200000, // +3 ngày
-                    status = "DONE",
-                    subjectId = "VAT_LY",
-                    updatedAt = currentTime
-                )
-            )
-
-            allTasks = mockTasks
-            taskAdapter.submitList(mockTasks)
-            updateDashboard(mockTasks)
-
-            // Decorate ngày có deadline
-            applyDeadlineDecorators(calculateDeadlineDays(allTasks))
+        // Observe real tasks from ViewModel
+        taskViewModel.allTasks.observe(this) { tasks ->
+            if (tasks.isNotEmpty()) {
+                allTasks = tasks
+                taskAdapter.submitList(tasks)
+                updateDashboard(tasks)
+                applyDeadlineDecorators(calculateDeadlineDays(tasks))
+            } else {
+                // Empty state
+                allTasks = emptyList()
+                taskAdapter.submitList(emptyList())
+                updateDashboard(emptyList())
+                binding.tvSubtitle.text = "Chưa có task nào. Nhấn '+' để thêm task mới!"
+            }
         }
     }
 
@@ -150,30 +189,60 @@ class HomeActivity : AppCompatActivity() {
             if (selectedTasks.isNotEmpty()) {
                 taskAdapter.submitList(selectedTasks)
                 updateDashboard(selectedTasks)
+                Toast.makeText(
+                    this,
+                    "📅 ${selectedTasks.size} task(s) vào ngày này",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 Toast.makeText(this, "Không có deadline ngày này", Toast.LENGTH_SHORT).show()
-                taskAdapter.submitList(emptyList())
-                updateDashboard(emptyList())
+                // Reset to all tasks
+                taskAdapter.submitList(allTasks)
+                updateDashboard(allTasks)
             }
         }
 
-        // Nếu người dùng chuyển tháng, ensure redraw decorators
         binding.materialCalendarView.setOnMonthChangedListener { _, _ ->
             binding.materialCalendarView.invalidateDecorators()
         }
     }
 
     private fun updateDashboard(tasks: List<Task>) {
+        val now = System.currentTimeMillis()
+
+        // ✅ Đếm urgent tasks (deadline < 2 ngày, chưa xong)
         val urgentCount = tasks.filter {
-            it.deadline - System.currentTimeMillis() < 2 * 86400000
+            (it.deadline - now < 2 * 86400000) && (it.status != "DONE")
         }.size
 
-        // Đếm tasks đã hoàn thành (status = "DONE")
+        // ✅ Đếm tasks đã hoàn thành
         val completedCount = tasks.count { it.status == "DONE" }
+
+        // ✅ Đếm tasks đang làm
+        val inProgressCount = tasks.count { it.status == "IN_PROGRESS" }
+
+        // ✅ Đếm tasks chưa làm
+        val todoCount = tasks.count { it.status == "TODO" }
+
+        // ✅ Tính % hoàn thành
         val progress = if (tasks.isNotEmpty()) (completedCount * 100) / tasks.size else 0
 
-        binding.tvSubtitle.text = "Hôm nay bạn có ${tasks.size} bài tập cần hoàn thành"
+        // ✅ Cập nhật subtitle với thông tin chi tiết
+        binding.tvSubtitle.text = when {
+            tasks.isEmpty() -> "Chưa có task nào. Nhấn '+' để thêm!"
+            urgentCount > 0 -> "⚠️ Bạn có $urgentCount task gấp (< 2 ngày)"
+            inProgressCount > 0 -> "⏳ Đang làm: $inProgressCount | Hoàn thành: $completedCount/$tasks.size"
+            else -> "📚 Tổng: ${tasks.size} tasks | ✅ Xong: $completedCount | 📝 Còn lại: $todoCount"
+        }
+
+        // ✅ Cập nhật progress bar
         binding.progressTask.progress = progress
+
+        // ✅ Cập nhật số urgent tasks
+        binding.tvUrgentCount?.text = "⏰ $urgentCount\nSắp đến hạn"
+
+        // ✅ Cập nhật số môn học (tạm hardcode, sau sẽ load từ DB)
+        binding.tvSubjectCount?.text = "📚 5\nMôn học"
     }
 
     private fun setupBottomNavigation() {
@@ -181,35 +250,115 @@ class HomeActivity : AppCompatActivity() {
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> true
+                R.id.nav_home -> {
+                    // Already on Home, do nothing
+                    true
+                }
+
                 R.id.nav_add -> {
-                    Toast.makeText(this, "Task List", Toast.LENGTH_SHORT).show()
+                    // Navigate to Add Task
+                    startActivity(Intent(this, AddTaskActivity::class.java))
+                    // Don't finish() - let user come back
                     true
                 }
+
                 R.id.nav_profile -> {
-                    Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show()
+                    // Show profile menu
+                    showProfileMenu()
                     true
                 }
+
                 else -> false
             }
         }
     }
 
+    private fun showProfileMenu() {
+        val options = arrayOf("📊 Thống kê", "⚙️ Cài đặt", "🚪 Đăng xuất")
+
+        AlertDialog.Builder(this)
+            .setTitle("Profile")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        // Statistics
+                        startActivity(Intent(this, StatsActivity::class.java))
+                    }
+                    1 -> {
+                        // ✅ Settings - SỬA DÒNG NÀY
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                    }
+                    2 -> {
+                        // Logout
+                        showLogoutConfirmation()
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun showLogoutConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Đăng xuất")
+            .setMessage("Bạn có chắc muốn đăng xuất?")
+            .setPositiveButton("Đăng xuất") { _, _ ->
+                performLogout()
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun performLogout() {
+        lifecycleScope.launch {
+            // ✅ QUAN TRỌNG: Xóa TẤT CẢ SharedPreferences
+            val appPrefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            val userPrefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+
+            // Xóa cả 2
+            appPrefs.edit().clear().apply()
+            userPrefs.edit().clear().apply()
+
+            Toast.makeText(this@HomeActivity, "Đã đăng xuất! 👋", Toast.LENGTH_SHORT).show()
+
+            // Quay về màn hình đăng nhập
+            val intent = Intent(this@HomeActivity, smart.planner.ui.LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
+    }
+
     // Tính set ngày có deadline từ danh sách tasks
     private fun calculateDeadlineDays(tasks: List<Task>): Set<CalendarDay> {
-        return tasks.map { task ->
+        return tasks.filter { it.status != "DONE" }.map { task ->
             val cal = java.util.Calendar.getInstance().apply { timeInMillis = task.deadline }
             CalendarDay.from(cal)
         }.toSet()
     }
 
-    // Áp dụng decorator: remove cũ, add mới, invalidate để refresh
+    // Áp dụng decorator
     private fun applyDeadlineDecorators(deadlineDays: Set<CalendarDay>) {
         currentDeadlineDecorator?.let { binding.materialCalendarView.removeDecorator(it) }
         val newDecorator = DeadlineDecorator(this, deadlineDays)
         binding.materialCalendarView.addDecorator(newDecorator)
         currentDeadlineDecorator = newDecorator
         binding.materialCalendarView.invalidateDecorators()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // ✅ Refresh data khi quay lại màn hình
+        binding.bottomNavigation.selectedItemId = R.id.nav_home
+
+        // ✅ Force reload tasks để cập nhật bộ đếm
+        taskViewModel.allTasks.observe(this) { tasks ->
+            if (tasks.isNotEmpty()) {
+                allTasks = tasks
+                taskAdapter.submitList(tasks)
+                updateDashboard(tasks)
+                applyDeadlineDecorators(calculateDeadlineDays(tasks))
+            }
+        }
     }
 
     // Decorator highlight ngày có deadline
@@ -225,6 +374,42 @@ class HomeActivity : AppCompatActivity() {
             view.setBackgroundDrawable(
                 ContextCompat.getDrawable(context, R.drawable.bg_deadline_day)!!
             )
+        }
+    }
+    private fun loadUserInfo() {
+        lifecycleScope.launch {
+            try {
+                val userId = userViewModel.getCurrentUserId()
+
+                if (userId != null && userId > 0) {
+                    // Lấy thông tin user từ SharedPreferences tạm thời
+                    val userPrefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+
+                    // Hoặc có thể lấy từ database
+                    // val user = userViewModel.getUserById(userId)
+
+                    // Tạm thời dùng tên mặc định, sau này sẽ load từ DB
+                    val userName = "Bạn"  // TODO: Load từ database
+
+                    // Cập nhật UI
+                    runOnUiThread {
+                        // Tìm TextView hiển thị greeting
+                        // Nếu có binding.tvGreeting
+                        try {
+                            binding.tvGreeting?.text = "Chào $userName! 👋"
+                        } catch (e: Exception) {
+                            // Nếu không có tvGreeting trong binding
+                            Log.d("HomeActivity", "tvGreeting not found: ${e.message}")
+                        }
+                    }
+                } else {
+                    // Không có user, quay về login
+                    startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
+                    finish()
+                }
+            } catch (e: Exception) {
+                Log.e("HomeActivity", "Error loading user info: ${e.message}")
+            }
         }
     }
 }

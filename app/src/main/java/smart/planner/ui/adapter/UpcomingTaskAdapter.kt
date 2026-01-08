@@ -1,6 +1,5 @@
 package smart.planner.ui.adapter
 
-
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -15,7 +14,8 @@ import java.util.Locale
 
 class UpcomingTaskAdapter(
     private val onTaskClick: (Task) -> Unit,
-    private val onCheckboxClick: (Task, Boolean) -> Unit
+    private val onCheckboxClick: (Task, Boolean) -> Unit,
+    private val onDeleteClick: ((Task) -> Unit)? = null  // ✅ THÊM CALLBACK DELETE (optional)
 ) : ListAdapter<Task, UpcomingTaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -24,7 +24,7 @@ class UpcomingTaskAdapter(
             parent,
             false
         )
-        return TaskViewHolder(binding, onTaskClick, onCheckboxClick)
+        return TaskViewHolder(binding, onTaskClick, onCheckboxClick, onDeleteClick)
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
@@ -34,39 +34,49 @@ class UpcomingTaskAdapter(
     class TaskViewHolder(
         private val binding: ItemTaskBinding,
         private val onTaskClick: (Task) -> Unit,
-        private val onCheckboxClick: (Task, Boolean) -> Unit
+        private val onCheckboxClick: (Task, Boolean) -> Unit,
+        private val onDeleteClick: ((Task) -> Unit)?  // ✅ THÊM PARAMETER
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(task: Task) {
             binding.apply {
-                // 1. Tắt listener trước khi gán giá trị để tránh bị gọi đè logic khi scroll list
-                cbDone.setOnCheckedChangeListener(null)
+                // 1. Tắt listener trước khi gán giá trị
+                checkboxCompleted.setOnCheckedChangeListener(null)
 
                 tvTaskTitle.text = task.title
                 tvDeadline.text = "Deadline: ${formatDeadline(task.deadline)}"
-                // Note: Task entity doesn't have isCompleted field, using deadline check instead
-                cbDone.isChecked = false // Default to false since Task doesn't have completion status
 
-                // 2. Gọi hàm cập nhật gạch ngang (tách riêng để dùng lại)
-                updateStrikeThrough(false) // Task doesn't have isCompleted field
+                // Hiển thị status
+                val isCompleted = task.status == "DONE"
+                checkboxCompleted.isChecked = isCompleted
 
+                // 2. Gọi hàm cập nhật gạch ngang
+                updateStrikeThrough(isCompleted)
+
+                // 3. Click vào task → Vào detail
                 root.setOnClickListener { onTaskClick(task) }
 
-                // 3. Xử lý click checkbox
-                cbDone.setOnCheckedChangeListener { _, isChecked ->
-                    updateStrikeThrough(isChecked) // Gạch ngang ngay lập tức trên giao diện
-                    onCheckboxClick(task, isChecked) // Báo về Activity/ViewModel
+                // 4. Xử lý click checkbox
+                checkboxCompleted.setOnCheckedChangeListener { _, isChecked ->
+                    updateStrikeThrough(isChecked)
+                    onCheckboxClick(task, isChecked)
+                }
+
+                // ✅ 5. XỬ LÝ NÚT XÓA
+                btnDeleteTask?.setOnClickListener {
+                    onDeleteClick?.invoke(task)
                 }
             }
         }
+
         private fun updateStrikeThrough(isCompleted: Boolean) {
             binding.apply {
                 if (isCompleted) {
                     tvTaskTitle.paintFlags = tvTaskTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                    tvTaskTitle.alpha = 0.5f // Làm mờ chữ cho đẹp
+                    tvTaskTitle.alpha = 0.5f
                 } else {
                     tvTaskTitle.paintFlags = tvTaskTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    tvTaskTitle.alpha = 1.0f // Hiện rõ lại
+                    tvTaskTitle.alpha = 1.0f
                 }
             }
         }

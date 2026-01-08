@@ -39,7 +39,7 @@ class TaskAdapter(
         private val tvSubject: TextView = itemView.findViewById(R.id.tvTaskSubject)
         private val tvDeadline: TextView = itemView.findViewById(R.id.tvDeadline)
         private val tvStatus: TextView = itemView.findViewById(R.id.tvStatus)
-        private val checkBox: CheckBox = itemView.findViewById(R.id.checkbox)
+        private val checkBox: CheckBox = itemView.findViewById(R.id.checkboxCompleted)
         private val btnDelete: ImageButton = itemView.findViewById(R.id.btnDeleteTask) // Ánh xạ nút xóa
 
         fun bind(task: Task, onDeleteClick: (Task) -> Unit) {

@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import smart.planner.data.entity.Task
+import smart.planner.data.model.Task  // ✅ Đổi từ entity → model
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -21,11 +21,11 @@ import java.util.Locale
 fun StatsScreen(tasks: List<Task>) {
 
     val total = tasks.size
-    val doneCount = tasks.count { it.isDone }
+    val doneCount = tasks.count { it.status == "DONE" }  // ✅ Đổi từ isDone → status
     val percentDone = if (total > 0) (doneCount * 100 / total) else 0
     val progress = if (total > 0) doneCount.toFloat() / total else 0f
 
-    val bySubject = tasks.groupBy { it.subjectName.ifBlank { "Unknown" } }
+    val bySubject = tasks.groupBy { it.subjectId.ifBlank { "Unknown" } }  // ✅ Đổi từ subjectName → subjectId
     val trend7Days = buildTrendLast7Days(tasks)
 
     LazyColumn(
@@ -76,9 +76,9 @@ fun StatsScreen(tasks: List<Task>) {
                     } else {
                         bySubject.entries
                             .sortedByDescending { it.value.size }
-                            .forEach { (subjectName, list) ->
-                                val done = list.count { it.isDone }
-                                Text("• $subjectName: ${list.size} tasks (done $done)")
+                            .forEach { (subjectId, list) ->  // ✅ Đổi biến name
+                                val done = list.count { it.status == "DONE" }  // ✅ Đổi từ isDone
+                                Text("• $subjectId: ${list.size} tasks (done $done)")
                                 Spacer(Modifier.height(6.dp))
                             }
                     }

@@ -62,4 +62,9 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+    fun updateTask(task: Task) {
+        viewModelScope.launch {
+            repository.update(task)
+        }
+    }
 }

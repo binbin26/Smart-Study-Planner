@@ -11,9 +11,9 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import smart.planner.data.database.AppDatabase
 import smart.planner.data.dao.TaskRealtimeDao
-import smart.planner.data.entity.Task
+import smart.planner.data.model.Task  // ✅ Đổi từ entity → model
 import smart.planner.data.entity.QuoteCache
-import smart.planner.data.firebase.toEntity
+import smart.planner.data.firebase.toTask  // ✅ Đổi từ toEntity → toTask
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -46,7 +46,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         realtimeDao.getAllTasks(
             onSuccess = { list ->
                 val tasks = list.map { (firebaseId, model) ->
-                    model.toEntity(firebaseId)
+                    model.toTask()  // ✅ Đổi từ toEntity → toTask
                 }
 
                 _taskList.postValue(tasks)
@@ -72,17 +72,15 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         try {
             realtimeDao.updateTaskDone(task.firebaseId, isDone)
 
-            // update UI local
+            // Update UI local
             val updatedList = _taskList.value
                 ?.map {
                     if (it.firebaseId == task.firebaseId) {
-                        it.copy(isDone = isDone)
+                        // ✅ Đổi từ isDone → status
+                        it.copy(status = if (isDone) "DONE" else "TODO")
                     } else it
                 }
                 ?: emptyList()
-
-            _taskList.postValue(updatedList)
-
 
             _taskList.postValue(updatedList)
             _taskStatus.postValue("Task updated")

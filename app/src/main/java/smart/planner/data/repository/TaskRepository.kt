@@ -76,6 +76,19 @@ class TaskRepository(private val taskDao: TaskDao) {
             }
         }
     }
+    /**
+     * Cập nhật task (legacy method - đơn giản)
+     */
+    suspend fun update(task: Task): Result<Unit> {
+        return withContext(Dispatchers.IO) {
+            try {
+                taskDao.updateTask(task)
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
 
     // ==================== READ ====================
 
