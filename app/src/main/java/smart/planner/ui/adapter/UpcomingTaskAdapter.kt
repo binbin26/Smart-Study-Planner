@@ -42,7 +42,7 @@ class UpcomingTaskAdapter(
                 // 1. Tắt listener trước khi gán giá trị để tránh bị gọi đè logic khi scroll list
                 cbDone.setOnCheckedChangeListener(null)
 
-                tvTaskTitle.text = task.name
+                tvTaskTitle.text = task.title
                 tvDeadline.text = "Deadline: ${formatDeadline(task.deadline)}"
                 // Note: Task entity doesn't have isCompleted field, using deadline check instead
                 cbDone.isChecked = false // Default to false since Task doesn't have completion status

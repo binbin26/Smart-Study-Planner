@@ -7,7 +7,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import smart.planner.R
-import smart.planner.data.entity.Task
+import smart.planner.data.model.Task
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -27,15 +27,16 @@ class TaskAdapter(
         val task = tasks[position]
 
         holder.title.text = task.title
-        holder.subject.text = task.subjectName
+        holder.subject.text = task.subjectId
 
         holder.deadline.text = "Deadline: ${formatDate(task.deadline)}"
 
-        holder.status.text = if (task.isDone) "Completed" else "Pending"
+        val isTaskDone = task.status == "DONE"
+        holder.status.text = if (isTaskDone) "Completed" else "Pending"
 
         // tránh trigger lại listener khi recycle
         holder.checkBox.setOnCheckedChangeListener(null)
-        holder.checkBox.isChecked = task.isDone
+        holder.checkBox.isChecked = task.status == "DONE"
 
         holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
             onCheckedChange?.invoke(task, isChecked)

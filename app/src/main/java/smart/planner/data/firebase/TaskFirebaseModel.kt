@@ -16,10 +16,10 @@ data class TaskFirebaseModel(
     var description: String? = null,
     var createdAt: Long? = null,
     var deadline: Long? = null,
-    var isDone: Boolean? = false,
-    var subjectId: String? = null,
-    var subjectName: String? = null,
-    var updatedAt: Long? = null
+    var status: String? = "TODO",        // ← ĐỔI từ isDone
+    var subjectId: String? = null,       // ← GIỮ LẠI
+    var updatedAt: Long? = null          // ← GIỮ LẠI
+    // XÓA subjectName
 )
 
 object TaskFirebaseService {

@@ -1,16 +1,36 @@
 package smart.planner.data.firebase
 
-import smart.planner.data.entity.Task
+import smart.planner.data.model.Task
 
-fun TaskFirebaseModel.toEntity(firebaseId: String): Task {
-    return Task(
-        firebaseId = firebaseId,
+/**
+ * Mapper giữa Task (Room) và TaskFirebaseModel
+ */
+
+// Convert Task entity → Firebase model
+fun Task.toFirebaseModel(): TaskFirebaseModel {
+    return TaskFirebaseModel(
+        id = firebaseId.ifEmpty { null },
         title = title,
         description = description,
-        createdAt = createdAt,
         deadline = deadline,
-        isDone = isDone,
+        status = status,
         subjectId = subjectId,
-        subjectName = subjectName
+        createdAt = createdAt,
+        updatedAt = updatedAt
+    )
+}
+
+// Convert Firebase model → Task entity
+fun TaskFirebaseModel.toTask(localId: Int = 0): Task {
+    return Task(
+        id = localId,
+        firebaseId = this.id ?: "",
+        title = this.title ?: "",
+        description = this.description ?: "",
+        createdAt = this.createdAt ?: System.currentTimeMillis(),
+        deadline = this.deadline ?: System.currentTimeMillis(),
+        status = this.status ?: "TODO",
+        subjectId = this.subjectId ?: "",
+        updatedAt = this.updatedAt ?: System.currentTimeMillis()
     )
 }

@@ -103,9 +103,10 @@ class AddTaskActivity : AppCompatActivity() {
 
             val selectedSubject = subjects[subjectIndex]
 
+            // Gọi addTask với subjectId thay vì subjectName
             taskViewModel.addTask(
-                name = name,
-                subjectName = selectedSubject.name,
+                title = name,
+                subjectId = selectedSubject.id.toString(),
                 deadline = deadline,
                 description = desc
             )

@@ -1,5 +1,6 @@
 package smart.planner.data.local.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 import smart.planner.data.local.entity.Task
@@ -27,7 +28,7 @@ interface TaskDao {
      * Sắp xếp theo deadline tăng dần
      */
     @Query("SELECT * FROM tasks WHERE subjectId = :subjectId ORDER BY deadline ASC")
-    fun getTasksBySubject(subjectId: String): Flow<List<Task>>
+    suspend fun getTasksBySubject(subjectId: String): List<Task>
 
     /**
      * Lấy tasks theo status (TODO, IN_PROGRESS, DONE, OVERDUE)
@@ -51,6 +52,10 @@ interface TaskDao {
         ORDER BY deadline ASC
     """)
     fun getTasksByDateRange(startDate: Long, endDate: Long): Flow<List<Task>>
+    @Query("SELECT * FROM tasks WHERE subjectId = :subjectId ORDER BY deadline ASC")
+    fun getTasksBySubjectLiveData(subjectId: String): LiveData<List<Task>>
+    @Query("UPDATE tasks SET title = :title, description = :description WHERE id = :taskId")
+    suspend fun updateTaskDetails(taskId: Int, title: String, description: String)
 
     /**
      * Lấy tasks quá hạn (chưa DONE và deadline < hiện tại)

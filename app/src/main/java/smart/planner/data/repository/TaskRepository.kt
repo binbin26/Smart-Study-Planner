@@ -14,7 +14,7 @@ class TaskRepository(private val taskDao: TaskDao) {
     val allTasks: LiveData<List<Task>> = taskDao.getAllTasks()
 
     // ==================== CREATE ====================
-    
+
     /**
      * Tạo mới task
      */
@@ -38,10 +38,15 @@ class TaskRepository(private val taskDao: TaskDao) {
                 }
 
                 val newTask = Task(
-                    name = name.trim(),
-                    subject = subject.trim(),
+                    id = 0,
+                    firebaseId = "",
+                    title = name.trim(),
+                    description = description.trim(),
+                    createdAt = System.currentTimeMillis(),
                     deadline = deadline,
-                    description = description.trim()
+                    status = "TODO",
+                    subjectId = subject.trim(),
+                    updatedAt = System.currentTimeMillis()
                 )
 
                 val taskId = taskDao.insertTask(newTask)
@@ -73,7 +78,7 @@ class TaskRepository(private val taskDao: TaskDao) {
     }
 
     // ==================== READ ====================
-    
+
     /**
      * Lấy tất cả tasks
      */
@@ -135,7 +140,7 @@ class TaskRepository(private val taskDao: TaskDao) {
     }
 
     // ==================== UPDATE ====================
-    
+
     /**
      * Cập nhật task
      */
@@ -165,10 +170,11 @@ class TaskRepository(private val taskDao: TaskDao) {
                 }
 
                 val updatedTask = task.copy(
-                    name = name?.trim() ?: task.name,
-                    subject = subject?.trim() ?: task.subject,
+                    title = name?.trim() ?: task.title,
+                    subjectId = subject?.trim() ?: task.subjectId,
                     deadline = deadline ?: task.deadline,
-                    description = description?.trim() ?: task.description
+                    description = description?.trim() ?: task.description,
+                    updatedAt = System.currentTimeMillis()
                 )
 
                 taskDao.updateTask(updatedTask)
@@ -209,7 +215,7 @@ class TaskRepository(private val taskDao: TaskDao) {
     }
 
     // ==================== DELETE ====================
-    
+
     /**
      * Xóa task
      */

@@ -44,9 +44,9 @@ class FirebaseRepository {
             tasks.forEach { task ->
                 val taskWithTimestamp = mapOf(
                     "id" to task.id,
-                    "name" to task.name,
+                    "name" to task.title,
                     "description" to task.description,
-                    "subject" to task.subject,
+                    "subject" to task.subjectId,
                     "deadline" to task.deadline,
                     "lastModified" to ServerValue.TIMESTAMP // Server timestamp
                 )
@@ -76,10 +76,13 @@ class FirebaseRepository {
                     if (existingTask == null || newTimestamp > (existingTask.lastModified ?: 0)) {
                         currentData.value = mapOf(
                             "id" to task.id,
-                            "name" to task.name,
+                            "title" to task.title,                  // ✅ ĐỔI
                             "description" to task.description,
-                            "subject" to task.subject,
+                            "subjectId" to task.subjectId,          // ✅ ĐỔI
                             "deadline" to task.deadline,
+                            "status" to task.status,                // ✅ THÊM
+                            "createdAt" to task.createdAt,          // ✅ THÊM
+                            "updatedAt" to task.updatedAt,          // ✅ THÊM
                             "lastModified" to newTimestamp
                         )
                     }
@@ -180,10 +183,13 @@ class FirebaseRepository {
         try {
             val taskWithTimestamp = mapOf(
                 "id" to task.id,
-                "name" to task.name,
+                "title" to task.title,                      // ✅ ĐỔI
                 "description" to task.description,
-                "subject" to task.subject,
+                "subjectId" to task.subjectId,              // ✅ ĐỔI
                 "deadline" to task.deadline,
+                "status" to task.status,                    // ✅ THÊM
+                "createdAt" to task.createdAt,              // ✅ THÊM
+                "updatedAt" to task.updatedAt,              // ✅ THÊM
                 "lastModified" to ServerValue.TIMESTAMP
             )
             tasksRef.child(task.id.toString()).setValue(taskWithTimestamp).await()
@@ -246,17 +252,24 @@ class FirebaseRepository {
 // Helper data class with timestamp
 private data class TaskWithTimestamp(
     val id: Int = 0,
-    val name: String = "",
+    val title: String = "",              // ✅
     val description: String = "",
-    val subject: String = "",
+    val subjectId: String = "",          // ✅
     val deadline: Long = 0,
+    val status: String = "TODO",         // ✅ THÊM
+    val createdAt: Long = 0,             // ✅ THÊM
+    val updatedAt: Long = 0,             // ✅ THÊM
     val lastModified: Long? = null
 ) {
     fun toTask() = Task(
         id = id,
-        name = name,
+        firebaseId = "",                 // ✅ THÊM
+        title = title,                   // ✅
         description = description,
-        subject = subject,
-        deadline = deadline
+        createdAt = createdAt,           // ✅
+        deadline = deadline,
+        status = status,                 // ✅
+        subjectId = subjectId,           // ✅
+        updatedAt = updatedAt            // ✅
     )
 }

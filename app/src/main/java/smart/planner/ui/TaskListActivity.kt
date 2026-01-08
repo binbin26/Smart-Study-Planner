@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import smart.planner.R
-import smart.planner.ui.adapter.TaskAdapter
+import smart.planner.ui.TaskAdapter  // ✅ Đổi import
 import smart.planner.ui.viewmodel.TaskViewModel
 
 class TaskListActivity : AppCompatActivity() {

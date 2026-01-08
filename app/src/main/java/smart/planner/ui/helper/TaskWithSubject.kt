@@ -20,7 +20,7 @@ data class TaskWithSubject(
             return tasks.map { task ->
                 TaskWithSubject(
                     task = task,
-                    subjectName = task.subject // Task already has subject as String
+                    subjectName = task.subjectId // Task already has subject as String
                 )
             }
         }
